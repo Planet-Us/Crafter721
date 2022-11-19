@@ -203,10 +203,10 @@
 			"type": "function"
 		}
 	],
-	"gachaAddressKlay" : "0x97301aA567762C6800EDF738e007b9611C28CF2D",
-	"gachaAddressBaobab": "0x1AD4aC227e34c6c344c3FFb81f521A9F2CF21daF",
-    "gachaAddressRinkeby" : "0x4B01Bf7778F198253422D77784127163CDa6FE62",
-    "gachaAddressEth" : "0x83377F7f0D1C6c853056B5468246dB83728a13A1",
+	"gachaAddressKlay" : "0xdcaF7B56F6122512B5D9fe7bCE8CD851E7DD602F",
+	"gachaAddressBaobab": "0x74f290106174634418039d4EfC83DE625F85518E",
+    "gachaAddressRinkeby" : "0x084a02a82DC08722320de1abd838d8dF4B8FffE6",
+    "gachaAddressEth" : "0x4B5B8129cB97c39162651dB461F72999725eFb05",
 	"gachaEthABI": [
 		{
 			"inputs": [],
@@ -957,6 +957,25 @@
 			"type": "function"
 		},
 		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "randomOrder",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
 			"inputs": [],
 			"name": "renounceOwnership",
 			"outputs": [],
@@ -1665,6 +1684,25 @@
 			"type": "function"
 		},
 		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "randomOrder",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
 			"inputs": [],
 			"name": "renounceOwnership",
 			"outputs": [],
@@ -1713,7 +1751,7 @@
 				},
 				{
 					"internalType": "bytes",
-					"name": "_data",
+					"name": "data",
 					"type": "bytes"
 				}
 			],

@@ -166,6 +166,8 @@ export default function ManageNFT(props) {
       setAddressCount(transferList.length);
     });
     const getJsonFileList = async () => {
+        transferList = [];
+        setAddressCount(0);
         let ret = await ipcRenderer.send('getJsonFile', {
             fileType: "json"
         });

@@ -27,7 +27,7 @@ function createWindow() {
             nodeIntegrationInWorker: true // <---  for web workers
         }
     });
-    win.setMenu(null);
+    // win.setMenu(null);
     const isWindows = process.platform === 'win32';
   let needsFocusFix = false;
   let triggeringProgrammaticBlur = false;
@@ -353,7 +353,7 @@ ipcMain.on('getContractList', async (event, arg) =>{
         }
     }else if(arg.chain == "KLAY"){
         console.log("BBBBB");
-        console.log(contractData.ETH.length);
+        console.log(contractData.KLAY.contractInfo);
         if(contractData.KLAY){
             console.log("AAAAA");
             for(let i = 0;i<contractData.KLAY.baobab.length;i++){
