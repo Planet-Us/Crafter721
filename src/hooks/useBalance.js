@@ -1,7 +1,7 @@
 
 import { ethers } from "ethers";
 import {  useEffect, useState } from "react";
-import { useStore } from "./useStore";
+import { useCrafterStore } from "./useCrafterStore";
 import { useWeb3 } from "./useWeb3";
 
 export function useBalance(address) {

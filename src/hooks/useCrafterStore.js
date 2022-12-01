@@ -1,6 +1,6 @@
 import create from 'zustand'
 
-export const useStore = create((set) => ({
+export const useCrafterStore = create((set) => ({
     web3: null,
     setWeb3: (web3) => set({ web3 }),
     mainWeb3: null,

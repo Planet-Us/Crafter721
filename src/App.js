@@ -18,7 +18,7 @@ import ManageNFT from './Component/ManageNFT.js';
 import Web3 from 'web3';
 import Caver from "caver-js";
 
-import useStore from './hooks/useStore'
+import { useBalance, useCrafterStore } from './hooks';
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.mainnetRPCURL;
 let caver = new Caver(rpcURL);
@@ -37,7 +37,7 @@ function Init(infuraCode){
   
   const mainWeb3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
   const goerliWeb3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-  useStore.setState({mainWeb3: mainWeb3, goerliWeb3:goerliWeb3});
+  useCrafterStore.setState({mainWeb3: mainWeb3, goerliWeb3:goerliWeb3});
 }
 
 // 원래라면 여기서
@@ -59,6 +59,7 @@ function App() {
   const [infuraCode, setInfuraCode] = useState("");
   const [totalSupply, setTotalSupply] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [balance2 , refreshBalance] = useBalance(account);
   const dataId = useRef(0);
   const contractFlag = [contractListMain, contractListTest];
   const Layout = styled.div`
@@ -226,12 +227,14 @@ useEffect(() => {
     console.log(account != null && infuraCode != null);
     if(account != null && infuraCode != null){
       if(chain == "ETH"){
-        if(network == "goerli"){
-            web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-        }else if(network == "mainnet"){
-            web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-        }
-        tempBalance = await web3.eth.getBalance(account);
+        // if(network == "goerli"){
+        //     web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
+        // }else if(network == "mainnet"){
+        //     web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+        // }
+        // tempBalance = await web3.eth.getBalance(account);
+        // 옵션
+        refreshBalance();
       }else if(chain == "KLAY"){
         if(network == "baobab"){
           rpcURL = contractData.baobabRPCURL;
@@ -243,7 +246,8 @@ useEffect(() => {
         tempBalance = await caver.klay.getBalance(account);
       }
       setBalance((tempBalance/1000000000000000000));
-
+      console.log(balance );
+      console.log(balance2);
     }
   }
   const changeChain = (chainState) => {

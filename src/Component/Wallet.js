@@ -35,7 +35,8 @@ export default function Wallet(props) {
     }
     const sendTransfer = async () => {
         let ret = await props.transferEth(address, toAddress, amount);
-        setBalance(props.balance);
+        setBalance(props.balance); 
+        // 이렇게 한들 , 밸런스가 갱신되는가??
     }
     const makeNewWallet = async () => {
         if(window.confirm("Do you want to make new Wallet address?")){
