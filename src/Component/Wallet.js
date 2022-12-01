@@ -9,7 +9,7 @@ export default function Wallet(props) {
     const [address, setAddress] = useState("");
     const [amount, setAmount] = useState("");
     const [toAddress, setToAddress] = useState("");
-    const [balance, setBalance] = useState(0);
+    // const [balance, setBalance] = useState(0);
     const [network, setNetwork] = useState('mainnet');
     const [loading, setLoading] = useState(false);
     const [transferFlag, setTransferFlag] = useState(false);
@@ -35,7 +35,7 @@ export default function Wallet(props) {
     }
     const sendTransfer = async () => {
         let ret = await props.transferEth(address, toAddress, amount);
-        setBalance(props.balance); 
+        // setBalance(props.balance); 
         // 이렇게 한들 , 밸런스가 갱신되는가??
     }
     const makeNewWallet = async () => {
@@ -58,7 +58,7 @@ export default function Wallet(props) {
     }
     useEffect( () => {
         setLoading(false);
-        setBalance(props.balance);
+        // setBalance(props.balance);
         if(props.accounts.length > 0){
             setAddress(props.accounts);
         }
@@ -97,9 +97,9 @@ export default function Wallet(props) {
                 <Button onClick={handleExport}>Export</Button>
                 <Button onClick={handleImport}>Import</Button><br/>
                 {props.chain == "ETH" ?
-                    <span style={{width: "100%", fontSize: "30px"}}>{balance} ETH</span>
+                    <span style={{width: "100%", fontSize: "30px"}}>{props.balance} ETH</span>
                     :
-                    <span style={{width: "100%", fontSize: "30px"}}>{balance} KLAY</span>
+                    <span style={{width: "100%", fontSize: "30px"}}>{props.balance} KLAY</span>
                 }
                 {exportFlag == true ?
                     <div>

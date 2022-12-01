@@ -9,6 +9,7 @@ export function useWeb3() {
     const goerliWeb3 = useCrafterStore((state) => state.goerliWeb3);
 
     const web3 = network === "goerli" ? goerliWeb3 : mainWeb3;
+    console.log(web3);
 
     return web3;
 }

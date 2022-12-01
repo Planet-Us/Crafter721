@@ -52,14 +52,15 @@ function App() {
   const [chain, setChain] = useState("ETH");
   const [network, setNetwork] = useState("mainnet");
   const [accountObj, setAccountObj] = useState({});
-  const [balance, setBalance] = useState(0);
+  // const [balance, setBalance] = useState(0);
   const [walletList, setWalletList] = useState([]);
   const [contractListMain, setContractListMain] = useState([]);
   const [contractListTest, setContractListTest] = useState([]);
   const [infuraCode, setInfuraCode] = useState("");
   const [totalSupply, setTotalSupply] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [balance2 , refreshBalance] = useBalance(account);
+  const [balance , refreshBalance] = useBalance(account);
+  const setStoreNetwork = useCrafterStore(state => state.setNetwork);
   const dataId = useRef(0);
   const contractFlag = [contractListMain, contractListTest];
   const Layout = styled.div`
@@ -70,6 +71,10 @@ function App() {
     font-size: 1.5rem;
     font-family: sans-serif;
   `;
+
+useEffect(() => {
+    console.log("useEffect", balance);
+},[]);
 
 useEffect(() => {
   ipcRenderer.once('getContractList-reply', async (event, contractListData) => { 
@@ -205,7 +210,8 @@ useEffect(() => {
           setAccount(decryptedWallet.address.toString());
           setPrivateKey(decryptedWallet.privateKey);
           setAccountObj(decryptedWallet);
-          setBalance(0);
+          // 이거 왜하는지 물어보기
+          // setBalance(0);
           
           ipcRenderer.send('getContractList', {
             chain: chain,
@@ -221,6 +227,8 @@ useEffect(() => {
   
   const changeNetwork = async(networkState) => {
     let ret = await setNetwork(networkState);
+    console.log(networkState);
+    setStoreNetwork(networkState);
     let tempBalance;
     console.log(account);
     console.log(infuraCode);
@@ -245,9 +253,10 @@ useEffect(() => {
         }
         tempBalance = await caver.klay.getBalance(account);
       }
-      setBalance((tempBalance/1000000000000000000));
-      console.log(balance );
-      console.log(balance2);
+      // setBalance((tempBalance/1000000000000000000));
+      // setBalance(balance2);
+      console.log(balance);
+      // console.log(balance2);
     }
   }
   const changeChain = (chainState) => {
