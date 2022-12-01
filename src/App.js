@@ -17,6 +17,8 @@ import EtherContract from './Component/EtherContract.js';
 import ManageNFT from './Component/ManageNFT.js';
 import Web3 from 'web3';
 import Caver from "caver-js";
+
+import useStore from './hooks/useStore'
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.mainnetRPCURL;
 let caver = new Caver(rpcURL);
@@ -30,6 +32,16 @@ let gachaABI = contractData.gachaKlayABI;
 
 const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
+
+function Init(infuraCode){
+  
+  const mainWeb3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+  const goerliWeb3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
+  useStore.setState({mainWeb3: mainWeb3, goerliWeb3:goerliWeb3});
+}
+
+// 원래라면 여기서
+// Init();
 
 function App() {
     
@@ -110,6 +122,8 @@ useEffect(() => {
       if(password.length >0){
         if(chain == "ETH"){
           setInfuraCode(walletTmp.infuraCode);
+          // infura code 를 받아오는 여기서 init
+          Init(walletTmp.infuraCode);
           if(password == walletTmp.password){
             for(let i = 0;i<walletTmp.walletData.length;i++){
               console.log(walletTmp.walletData[i]);
