@@ -19,6 +19,8 @@ import Web3 from 'web3';
 import Caver from "caver-js";
 
 import { useBalance, useCrafterStore } from './hooks';
+
+import {urls} from './urls'
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.mainnetRPCURL;
 let caver = new Caver(rpcURL);
@@ -33,11 +35,37 @@ let gachaABI = contractData.gachaKlayABI;
 const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
 
-function Init(infuraCode){
+function Init(chain,network,infuraCode){
   
-  const mainWeb3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-  const goerliWeb3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-  useCrafterStore.setState({mainWeb3: mainWeb3, goerliWeb3:goerliWeb3});
+  // const mainnetWeb3 = new Web3(`${urls[chain][network]}${infuraCode}`);
+  // const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
+  // const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
+
+  // const mainnetWeb3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+  // const testnetWeb3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
+
+// }else if(chain == "KLAY"){
+//   if(network == "baobab"){
+//     rpcURL = contractData.baobabRPCURL;
+//     caver = new Caver(rpcURL);
+//   }else if(network == "mainnet"){
+//     rpcURL = contractData.mainnetRPCURL;
+//     caver = new Caver(rpcURL);
+//   }
+//   tempBalance = await caver.klay.getBalance(account);
+
+if(chain === "ETH"){
+  const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
+  const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
+
+  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
+} else if(chain == "KLAY"){
+  const mainnetWeb3 = new Caver(`${contractData.mainnetRPCURL}`);
+  const testnetWeb3 = new Caver(`${contractData.baobabRPCURL}`);
+
+  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
+}
+
 }
 
 // 원래라면 여기서
@@ -60,6 +88,7 @@ function App() {
   const [totalSupply, setTotalSupply] = useState(0);
   const [loading, setLoading] = useState(false);
   const [balance , refreshBalance] = useBalance(account);
+  const setStoreChain = useCrafterStore(state => state.setChain);
   const setStoreNetwork = useCrafterStore(state => state.setNetwork);
   const dataId = useRef(0);
   const contractFlag = [contractListMain, contractListTest];
@@ -129,7 +158,7 @@ useEffect(() => {
         if(chain == "ETH"){
           setInfuraCode(walletTmp.infuraCode);
           // infura code 를 받아오는 여기서 init
-          Init(walletTmp.infuraCode);
+          Init(chain,network,walletTmp.infuraCode);
           if(password == walletTmp.password){
             for(let i = 0;i<walletTmp.walletData.length;i++){
               console.log(walletTmp.walletData[i]);
@@ -229,6 +258,7 @@ useEffect(() => {
     let ret = await setNetwork(networkState);
     console.log(networkState);
     setStoreNetwork(networkState);
+    setStoreChain(chain);
     let tempBalance;
     console.log(account);
     console.log(infuraCode);
@@ -252,6 +282,7 @@ useEffect(() => {
           caver = new Caver(rpcURL);
         }
         tempBalance = await caver.klay.getBalance(account);
+        // tempBalance = await web3.klay.getBalance(account);
       }
       // setBalance((tempBalance/1000000000000000000));
       // setBalance(balance2);

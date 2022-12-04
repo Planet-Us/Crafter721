@@ -1,17 +1,26 @@
 
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
+import { useChain } from "./useChain";
 import { useWeb3 } from "./useWeb3";
 
 export function useBalance(address) {
     const web3 = useWeb3()
+    const chain = useChain();
 
     const [balance, setBalance] = useState("Loading...");
 
     const refreshBalance = () => {
-        Promise.all([web3.eth.getBalance(address)]).then((values) => {
-            // console.log(address);
+        // Promise.all([web3.eth.getBalance(address)]).then((values) => {
+        //     // console.log(address);
+        //     // console.log(values);
+        //     setBalance(ethers.utils.formatEther(values[0]));
+        // });
+
+
+        Promise.all([web3[chain.toLowerCase()].getBalance(address)]).then((values) => {
             // console.log(values);
+            // setBalance(values.toString());
             setBalance(ethers.utils.formatEther(values[0]));
         });
     };
@@ -21,7 +30,14 @@ export function useBalance(address) {
         // refreshBalance();
         if (address) {
 
-            Promise.all([web3.eth.getBalance(address)]).then((values) => {
+            // Promise.all([web3.eth.getBalance(address)]).then((values) => {
+            //     // console.log(values);
+            //     // setBalance(values.toString());
+            //     setBalance(ethers.utils.formatEther(values[0]));
+            // });
+
+            console.log(chain);
+            Promise.all([web3[chain.toLowerCase()].getBalance(address)]).then((values) => {
                 // console.log(values);
                 // setBalance(values.toString());
                 setBalance(ethers.utils.formatEther(values[0]));

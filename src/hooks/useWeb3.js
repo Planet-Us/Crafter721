@@ -5,11 +5,11 @@ export function useWeb3() {
     
     // chain 도 추가 나중에 , klay 인지 polygon 인지 
     
-    const mainWeb3 = useCrafterStore((state) => state.mainWeb3);
-    const goerliWeb3 = useCrafterStore((state) => state.goerliWeb3);
+    const mainnetWeb3 = useCrafterStore((state) => state.mainnetWeb3);
+    const testnetWeb3 = useCrafterStore((state) => state.testnetWeb3);
 
-    const web3 = network === "goerli" ? goerliWeb3 : mainWeb3;
+    const web3 = network === "mainnet" ? mainnetWeb3 : testnetWeb3;
     console.log(web3);
 
     return web3;
-}
+} 
