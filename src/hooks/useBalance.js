@@ -36,7 +36,10 @@ export function useBalance(address) {
             //     setBalance(ethers.utils.formatEther(values[0]));
             // });
 
-            console.log(chain);
+            // console.log(chain);
+            // console.log(web3);
+            // web3.eth.getBalance
+            // web3.klay.getBalance
             Promise.all([web3[chain.toLowerCase()].getBalance(address)]).then((values) => {
                 // console.log(values);
                 // setBalance(values.toString());

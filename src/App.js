@@ -62,7 +62,7 @@ if(chain === "ETH"){
 } else if(chain == "KLAY"){
   const mainnetWeb3 = new Caver(`${contractData.mainnetRPCURL}`);
   const testnetWeb3 = new Caver(`${contractData.baobabRPCURL}`);
-
+  console.log(mainnetWeb3);
   useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
 }
 
@@ -183,6 +183,10 @@ useEffect(() => {
             alert("Wrong Password!");
           }
         }else if(chain == "KLAY"){
+          Init(chain,network,walletTmp.infuraCode);
+          console.log("KLAY");
+          console.log(password);
+          console.log(walletTmp.password);
           if(password == walletTmp.password){
             console.log(walletTmp.walletData);
             if(typeof walletTmp.walletData.length != "undefined"){
