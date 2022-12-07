@@ -17,6 +17,10 @@ import EtherContract from './Component/EtherContract.js';
 import ManageNFT from './Component/ManageNFT.js';
 import Web3 from 'web3';
 import Caver from "caver-js";
+
+import { useBalance, useCrafterStore } from './hooks';
+
+import {urls} from './urls'
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.mainnetRPCURL;
 let caver = new Caver(rpcURL);
@@ -31,6 +35,42 @@ let gachaABI = contractData.gachaKlayABI;
 const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
 
+function Init(chain,network,infuraCode){
+  
+  // const mainnetWeb3 = new Web3(`${urls[chain][network]}${infuraCode}`);
+  // const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
+  // const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
+
+  // const mainnetWeb3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+  // const testnetWeb3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
+
+// }else if(chain == "KLAY"){
+//   if(network == "baobab"){
+//     rpcURL = contractData.baobabRPCURL;
+//     caver = new Caver(rpcURL);
+//   }else if(network == "mainnet"){
+//     rpcURL = contractData.mainnetRPCURL;
+//     caver = new Caver(rpcURL);
+//   }
+//   tempBalance = await caver.klay.getBalance(account);
+
+if(chain === "ETH"){
+  const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
+  const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
+
+  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
+} else if(chain == "KLAY"){
+  const mainnetWeb3 = new Caver(`${contractData.mainnetRPCURL}`);
+  const testnetWeb3 = new Caver(`${contractData.baobabRPCURL}`);
+  console.log(mainnetWeb3);
+  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
+}
+
+}
+
+// 원래라면 여기서
+// Init();
+
 function App() {
     
   const [account, setAccount] = useState("");
@@ -40,13 +80,16 @@ function App() {
   const [chain, setChain] = useState("ETH");
   const [network, setNetwork] = useState("mainnet");
   const [accountObj, setAccountObj] = useState({});
-  const [balance, setBalance] = useState(0);
+  // const [balance, setBalance] = useState(0);
   const [walletList, setWalletList] = useState([]);
   const [contractListMain, setContractListMain] = useState([]);
   const [contractListTest, setContractListTest] = useState([]);
   const [infuraCode, setInfuraCode] = useState("");
   const [totalSupply, setTotalSupply] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [balance , refreshBalance] = useBalance(account);
+  const setStoreChain = useCrafterStore(state => state.setChain);
+  const setStoreNetwork = useCrafterStore(state => state.setNetwork);
   const dataId = useRef(0);
   const contractFlag = [contractListMain, contractListTest];
   const Layout = styled.div`
@@ -57,6 +100,10 @@ function App() {
     font-size: 1.5rem;
     font-family: sans-serif;
   `;
+
+useEffect(() => {
+    console.log("useEffect", balance);
+},[]);
 
 useEffect(() => {
   ipcRenderer.once('getContractList-reply', async (event, contractListData) => { 
@@ -110,6 +157,8 @@ useEffect(() => {
       if(password.length >0){
         if(chain == "ETH"){
           setInfuraCode(walletTmp.infuraCode);
+          // infura code 를 받아오는 여기서 init
+          Init(chain,network,walletTmp.infuraCode);
           if(password == walletTmp.password){
             for(let i = 0;i<walletTmp.walletData.length;i++){
               console.log(walletTmp.walletData[i]);
@@ -134,6 +183,10 @@ useEffect(() => {
             alert("Wrong Password!");
           }
         }else if(chain == "KLAY"){
+          Init(chain,network,walletTmp.infuraCode);
+          console.log("KLAY");
+          console.log(password);
+          console.log(walletTmp.password);
           if(password == walletTmp.password){
             console.log(walletTmp.walletData);
             if(typeof walletTmp.walletData.length != "undefined"){
@@ -190,7 +243,8 @@ useEffect(() => {
           setAccount(decryptedWallet.address.toString());
           setPrivateKey(decryptedWallet.privateKey);
           setAccountObj(decryptedWallet);
-          setBalance(0);
+          // 이거 왜하는지 물어보기
+          // setBalance(0);
           
           ipcRenderer.send('getContractList', {
             chain: chain,
@@ -206,18 +260,23 @@ useEffect(() => {
   
   const changeNetwork = async(networkState) => {
     let ret = await setNetwork(networkState);
+    console.log(networkState);
+    setStoreNetwork(networkState);
+    setStoreChain(chain);
     let tempBalance;
     console.log(account);
     console.log(infuraCode);
     console.log(account != null && infuraCode != null);
     if(account != null && infuraCode != null){
       if(chain == "ETH"){
-        if(network == "goerli"){
-            web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-        }else if(network == "mainnet"){
-            web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-        }
-        tempBalance = await web3.eth.getBalance(account);
+        // if(network == "goerli"){
+        //     web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
+        // }else if(network == "mainnet"){
+        //     web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+        // }
+        // tempBalance = await web3.eth.getBalance(account);
+        // 옵션
+        refreshBalance();
       }else if(chain == "KLAY"){
         if(network == "baobab"){
           rpcURL = contractData.baobabRPCURL;
@@ -227,9 +286,12 @@ useEffect(() => {
           caver = new Caver(rpcURL);
         }
         tempBalance = await caver.klay.getBalance(account);
+        // tempBalance = await web3.klay.getBalance(account);
       }
-      setBalance((tempBalance/1000000000000000000));
-
+      // setBalance((tempBalance/1000000000000000000));
+      // setBalance(balance2);
+      console.log(balance);
+      // console.log(balance2);
     }
   }
   const changeChain = (chainState) => {
@@ -1030,7 +1092,7 @@ const createWallet = async (password, infuraCodeArg) =>{
                   <Route path="/" element={
                 <Wallet
                     accounts={account}
-                    balance={balance}
+                    // balance={balance}
                     transferEth={transferEth}
                     makeNewWallet={makeNewWallet}
                     network={network}

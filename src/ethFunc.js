@@ -3,6 +3,7 @@ import Web3 from 'web3';
 import Contract from 'web3-eth-contract';
 import TokenIDList from './tokenIDList';
 import ContractPath from './Contract';
+import { getSnapshotContract, getCurrentWeb3 } from './utils/ethUtils';
 
 export default async function ethFunc(funcType, account, network, checkOne, infuraCode) {
 
@@ -28,15 +29,18 @@ export default async function ethFunc(funcType, account, network, checkOne, infu
 
 
 const ethToCsv = async (address, network, infuraCode) => {
-        let web3;
+        // let web3;
         var contract1;
-    if(network == "goerli"){
-        web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-        contract1 = new web3.eth.Contract(ContractPath.snapshot2ABI, ContractPath.snapshotContract2Rinkeby);
-    }else if(network == "mainnet"){
-        web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-        contract1 = new web3.eth.Contract(ContractPath.snapshot2ABI, ContractPath.snapshotContract2);
-    }
+
+    let web3 = getCurrentWeb3()
+    contract1 = getSnapshotContract()
+    // if(network == "goerli"){
+    //     web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
+    //     contract1 = new web3.eth.Contract(ContractPath.snapshot2ABI, ContractPath.snapshotContract2Rinkeby);
+    // }else if(network == "mainnet"){
+    //     web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+    //     contract1 = new web3.eth.Contract(ContractPath.snapshot2ABI, ContractPath.snapshotContract2);
+    // }
     // console.log(web3);
     let start = 1;
     
