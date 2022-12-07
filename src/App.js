@@ -1092,7 +1092,7 @@ const createWallet = async (password, infuraCodeArg) =>{
                   <Route path="/" element={
                 <Wallet
                     accounts={account}
-                    balance={balance}
+                    // balance={balance}
                     transferEth={transferEth}
                     makeNewWallet={makeNewWallet}
                     network={network}
