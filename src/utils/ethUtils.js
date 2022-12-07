@@ -1,7 +1,20 @@
 import { useCrafterStore } from '../hooks/useCrafterStore'
+import ContractPath from '../Contract';
+
+export function getCurrentWeb3(){
+    const { network, mainnetWeb3, testnetWeb3 } = useCrafterStore.getState();
+    
+    // const mainnetWeb3 = useCrafterStore((state) => state.mainnetWeb3);
+    // const testnetWeb3 = useCrafterStore((state) => state.testnetWeb3);
+
+    const web3 = network === "mainnet" ? mainnetWeb3 : testnetWeb3;
+
+    
+    return web3;
+}
 
 export function getSnapshotContract(){
-    const { network, mainnetWeb3, testnetWeb3 } = useCrafterStore().getState();
+    const { network, mainnetWeb3, testnetWeb3 } = useCrafterStore.getState();
     let contract1 = null;
 
     if(network == "goerli"){

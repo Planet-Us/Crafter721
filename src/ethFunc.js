@@ -3,7 +3,7 @@ import Web3 from 'web3';
 import Contract from 'web3-eth-contract';
 import TokenIDList from './tokenIDList';
 import ContractPath from './Contract';
-import { getCurrentWeb3, getSnapshotContract } from './utils/ethUtils';
+import { getSnapshotContract, getCurrentWeb3 } from './utils/ethUtils';
 
 export default async function ethFunc(funcType, account, network, checkOne, infuraCode) {
 
@@ -32,7 +32,7 @@ const ethToCsv = async (address, network, infuraCode) => {
         // let web3;
         var contract1;
 
-    // let web3 = getCurrentWeb3()
+    let web3 = getCurrentWeb3()
     contract1 = getSnapshotContract()
     // if(network == "goerli"){
     //     web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
