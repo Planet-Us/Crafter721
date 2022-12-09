@@ -2,19 +2,19 @@ import react, {Component, useEffect, useState, useRef} from 'react';
 import './App.css';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import contractData from './Contract';
-import Login from './Component/Login.js';
+import Login from './pages/Login.js';
 import Loading from './Component/Loading.js';
-import Preview from './Component/Preview.js';
-import Wallet from './Component/Wallet.js';
+import Preview from './pages/Preview.js';
+import Wallet from './pages/Wallet.js';
 import UploadFile from './Component/UploadFile.js';
-import EtherManage from './Component/EtherManage.js';
-import NotFound from './Component/NotFound.js';
+import EtherManage from './pages/EtherManage.js';
+import NotFound from './pages/NotFound.js';
 import Header from './Component/Header.js';
-import Scope from './Component/Scope.js';
+import Scope from './pages/Scope.js';
 import styled, { createGlobalStyle } from "styled-components";
-import SideNav2 from "./Component/SideNav2";
-import EtherContract from './Component/EtherContract.js';
-import ManageNFT from './Component/ManageNFT.js';
+import SideNav from "./Component/SideNav";
+import EtherContract from './pages/EtherContract.js';
+import ManageNFT from './pages/ManageNFT.js';
 import Web3 from 'web3';
 import Caver from "caver-js";
 
@@ -1087,7 +1087,7 @@ const createWallet = async (password, infuraCodeArg) =>{
               password={password}
               />
               <Layout style={{justifyContent: "initial", padding: "0px", height: "1000px",backgroundColor: "#363940"}}>
-                <SideNav2 />
+                <SideNav />
                 <Routes>
                   <Route path="/" element={
                 <Wallet
