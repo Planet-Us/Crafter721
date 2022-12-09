@@ -8,7 +8,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import Loading from './Loading.js';
+import Loading from '../Component/Loading.js';
 import ListItem from '@mui/material/ListItem';
 import List from '@mui/material/List';
 

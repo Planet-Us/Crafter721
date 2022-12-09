@@ -6,7 +6,7 @@ import Login from './pages/Login.js';
 import Loading from './Component/Loading.js';
 import Preview from './pages/Preview.js';
 import Wallet from './pages/Wallet.js';
-import UploadFile from './Component/UploadFile.js';
+import UploadFile from './pages/UploadFile.js';
 import EtherManage from './pages/EtherManage.js';
 import NotFound from './pages/NotFound.js';
 import Header from './Component/Header.js';
@@ -22,6 +22,7 @@ import { useBalance, useCrafterStore } from './hooks';
 
 import {urls} from './urls'
 // const store = window.Electron.store
+import electronStore from './utils/electronStore';
 
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.mainnetRPCURL;
@@ -44,9 +45,13 @@ function Init(chain,network,infuraCode){
     // or
     // console.log(window.electron.store.get('foo'));
 
-    ipcRenderer.send('electron-store-set', 'foo', 'bar');
+    // ipcRenderer.send('electron-store-set', 'foo', 'bar');
 
-    console.log(ipcRenderer.sendSync('electron-store-get', 'foo'));
+    // console.log(ipcRenderer.sendSync('electron-store-get', 'foo'));
+
+    // console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww");
+    // electronStore.set("foo", "bar123");
+    // console.log(electronStore.get("foo"));
   // const mainnetWeb3 = new Web3(`${urls[chain][network]}${infuraCode}`);
   // const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
   // const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
