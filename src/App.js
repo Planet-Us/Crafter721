@@ -21,6 +21,8 @@ import Caver from "caver-js";
 import { useBalance, useCrafterStore } from './hooks';
 
 import {urls} from './urls'
+// const store = window.Electron.store
+
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.mainnetRPCURL;
 let caver = new Caver(rpcURL);
@@ -36,7 +38,15 @@ const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
 
 function Init(chain,network,infuraCode){
-  
+  // console.log(store);
+  // let tmp = store.get('foo')
+  // window.electron.store.set('foo', 'bar');
+    // or
+    // console.log(window.electron.store.get('foo'));
+
+    ipcRenderer.send('electron-store-set', 'foo', 'bar');
+
+    console.log(ipcRenderer.sendSync('electron-store-get', 'foo'));
   // const mainnetWeb3 = new Web3(`${urls[chain][network]}${infuraCode}`);
   // const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
   // const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
