@@ -38,7 +38,7 @@ let gachaABI = contractData.gachaKlayABI;
 const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
 
-function Init(chain,network,infuraCode){
+function Init(chain){
   // console.log(store);
   // let tmp = store.get('foo')
   // window.electron.store.set('foo', 'bar');
@@ -50,8 +50,8 @@ function Init(chain,network,infuraCode){
     // console.log(ipcRenderer.sendSync('electron-store-get', 'foo'));
 
     // console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww");
-    // electronStore.set("foo", "bar123");
-    // console.log(electronStore.get("foo"));
+    electronStore.set("foo", "bar123999");
+    console.log(electronStore.get("foo"));
   // const mainnetWeb3 = new Web3(`${urls[chain][network]}${infuraCode}`);
   // const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
   // const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
@@ -70,6 +70,8 @@ function Init(chain,network,infuraCode){
 //   tempBalance = await caver.klay.getBalance(account);
 
 if(chain === "ETH"){
+  const infuraCode = electronStore.get("infuraCode");
+
   const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
   const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
 
@@ -84,7 +86,7 @@ if(chain === "ETH"){
 }
 
 // 원래라면 여기서
-// Init();
+// Init("ETH");
 
 function App() {
     
@@ -172,8 +174,10 @@ useEffect(() => {
       if(password.length >0){
         if(chain == "ETH"){
           setInfuraCode(walletTmp.infuraCode);
+          // 처음 create wallet 할때 infura code 를 스토어에 저장함 ,
+          // electronStore.set('infuraCode',walletTmp.infuraCode);
           // infura code 를 받아오는 여기서 init
-          Init(chain,network,walletTmp.infuraCode);
+          // Init(chain,network,walletTmp.infuraCode);
           if(password == walletTmp.password){
             for(let i = 0;i<walletTmp.walletData.length;i++){
               console.log(walletTmp.walletData[i]);
@@ -198,7 +202,7 @@ useEffect(() => {
             alert("Wrong Password!");
           }
         }else if(chain == "KLAY"){
-          Init(chain,network,walletTmp.infuraCode);
+          // Init(chain,network,walletTmp.infuraCode);
           console.log("KLAY");
           console.log(password);
           console.log(walletTmp.password);
@@ -310,7 +314,10 @@ useEffect(() => {
     }
   }
   const changeChain = (chainState) => {
+    // 여기도 가능은 할듯 
+    // Init(chainState)
     setChain(chainState);
+
   }
   const changeAddress = (addressState) => {
     getDataWithAddress(addressState);
@@ -534,10 +541,13 @@ useEffect(() => {
   }
   const doLogin = async (chain, passwordFromSignPage) => {
     setLoading(true);
+    // 여기서 init 할까 
+    Init(chain)
     ipcRenderer.send('getWallet', {
       chain : chain
     })
     setPassword(passwordFromSignPage);
+    electronStore.set("password", passwordFromSignPage);
   }
   const makeNewWallet = async () => {
     setLoading(true);
@@ -1068,6 +1078,7 @@ const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수�
 const createWallet = async (password, infuraCodeArg) =>{
   setLoading(true);
   setInfuraCode(infuraCodeArg);
+  electronStore.set('infuraCode', infuraCodeArg);
   let ret;
   let walletTmp;
   if(chain == "ETH"){
