@@ -2,25 +2,28 @@ import react, {Component, useEffect, useState, useRef} from 'react';
 import './App.css';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import contractData from './Contract';
-import Login from './Component/Login.js';
+import Login from './pages/Login.js';
 import Loading from './Component/Loading.js';
-import Preview from './Component/Preview.js';
-import Wallet from './Component/Wallet.js';
-import UploadFile from './Component/UploadFile.js';
-import EtherManage from './Component/EtherManage.js';
-import NotFound from './Component/NotFound.js';
+import Preview from './pages/Preview.js';
+import Wallet from './pages/Wallet.js';
+import UploadFile from './pages/UploadFile.js';
+import EtherManage from './pages/EtherManage.js';
+import NotFound from './pages/NotFound.js';
 import Header from './Component/Header.js';
-import Scope from './Component/Scope.js';
+import Scope from './pages/Scope.js';
 import styled, { createGlobalStyle } from "styled-components";
-import SideNav2 from "./Component/SideNav2";
-import EtherContract from './Component/EtherContract.js';
-import ManageNFT from './Component/ManageNFT.js';
+import SideNav from "./Component/SideNav";
+import EtherContract from './pages/EtherContract.js';
+import ManageNFT from './pages/ManageNFT.js';
 import Web3 from 'web3';
 import Caver from "caver-js";
 
 import { useBalance, useCrafterStore } from './hooks';
 
 import {urls} from './urls'
+// const store = window.Electron.store
+import electronStore from './utils/electronStore';
+
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.mainnetRPCURL;
 let caver = new Caver(rpcURL);
@@ -35,26 +38,11 @@ let gachaABI = contractData.gachaKlayABI;
 const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
 
-function Init(chain,network,infuraCode){
-  
-  // const mainnetWeb3 = new Web3(`${urls[chain][network]}${infuraCode}`);
-  // const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
-  // const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
-
-  // const mainnetWeb3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-  // const testnetWeb3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-
-// }else if(chain == "KLAY"){
-//   if(network == "baobab"){
-//     rpcURL = contractData.baobabRPCURL;
-//     caver = new Caver(rpcURL);
-//   }else if(network == "mainnet"){
-//     rpcURL = contractData.mainnetRPCURL;
-//     caver = new Caver(rpcURL);
-//   }
-//   tempBalance = await caver.klay.getBalance(account);
+function Init(chain){
 
 if(chain === "ETH"){
+  const infuraCode = electronStore.get("infuraCode");
+
   const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
   const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
 
@@ -62,14 +50,14 @@ if(chain === "ETH"){
 } else if(chain == "KLAY"){
   const mainnetWeb3 = new Caver(`${contractData.mainnetRPCURL}`);
   const testnetWeb3 = new Caver(`${contractData.baobabRPCURL}`);
-  console.log(mainnetWeb3);
+  
   useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
 }
 
 }
 
 // 원래라면 여기서
-// Init();
+// Init("ETH");
 
 function App() {
     
@@ -100,10 +88,6 @@ function App() {
     font-size: 1.5rem;
     font-family: sans-serif;
   `;
-
-useEffect(() => {
-    console.log("useEffect", balance);
-},[]);
 
 useEffect(() => {
   ipcRenderer.once('getContractList-reply', async (event, contractListData) => { 
@@ -145,8 +129,8 @@ useEffect(() => {
     });
   }
   useEffect(() => {
-    console.log(account);
-    console.log(allWalletData);
+    // console.log(account);
+    // console.log(allWalletData);
       changeNetwork(network);
   })
 
@@ -157,11 +141,13 @@ useEffect(() => {
       if(password.length >0){
         if(chain == "ETH"){
           setInfuraCode(walletTmp.infuraCode);
+          // 처음 create wallet 할때 infura code 를 스토어에 저장함 ,
+          // electronStore.set('infuraCode',walletTmp.infuraCode);
           // infura code 를 받아오는 여기서 init
-          Init(chain,network,walletTmp.infuraCode);
+          // Init(chain,network,walletTmp.infuraCode);
           if(password == walletTmp.password){
             for(let i = 0;i<walletTmp.walletData.length;i++){
-              console.log(walletTmp.walletData[i]);
+              // console.log(walletTmp.walletData[i]);
               let decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData[i], password);
               walletArray.push(decryptedWallet);
               web3.eth.accounts.wallet.add(decryptedWallet.privateKey);
@@ -183,12 +169,10 @@ useEffect(() => {
             alert("Wrong Password!");
           }
         }else if(chain == "KLAY"){
-          Init(chain,network,walletTmp.infuraCode);
-          console.log("KLAY");
-          console.log(password);
-          console.log(walletTmp.password);
+          // Init(chain,network,walletTmp.infuraCode);
+          
           if(password == walletTmp.password){
-            console.log(walletTmp.walletData);
+            // console.log(walletTmp.walletData);
             if(typeof walletTmp.walletData.length != "undefined"){
               for(let i = 0;i<walletTmp.walletData.length;i++){
                 let decryptedWallet = await caver.klay.accounts.decrypt(walletTmp.walletData[i], password);
@@ -231,7 +215,7 @@ useEffect(() => {
     ipcRenderer.on('addWallet-reply', async (event, walletTmp) => { //header에서 시점이 안맞으니까 addwallet-reply를 header에도 넣어서 주소 따로 추가하도록 만들어야함
       let walletArray = new Array();
       let decryptedWallet;
-      console.log(walletTmp);
+      // console.log(walletTmp);
       if(password.length >0){
         if(chain == "ETH"){
             decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData, password);
@@ -243,8 +227,6 @@ useEffect(() => {
           setAccount(decryptedWallet.address.toString());
           setPrivateKey(decryptedWallet.privateKey);
           setAccountObj(decryptedWallet);
-          // 이거 왜하는지 물어보기
-          // setBalance(0);
           
           ipcRenderer.send('getContractList', {
             chain: chain,
@@ -259,43 +241,22 @@ useEffect(() => {
   });
   
   const changeNetwork = async(networkState) => {
-    let ret = await setNetwork(networkState);
-    console.log(networkState);
+    setNetwork(networkState);
     setStoreNetwork(networkState);
     setStoreChain(chain);
-    let tempBalance;
-    console.log(account);
-    console.log(infuraCode);
-    console.log(account != null && infuraCode != null);
-    if(account != null && infuraCode != null){
-      if(chain == "ETH"){
-        // if(network == "goerli"){
-        //     web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-        // }else if(network == "mainnet"){
-        //     web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-        // }
-        // tempBalance = await web3.eth.getBalance(account);
-        // 옵션
-        refreshBalance();
-      }else if(chain == "KLAY"){
-        if(network == "baobab"){
-          rpcURL = contractData.baobabRPCURL;
-          caver = new Caver(rpcURL);
-        }else if(network == "mainnet"){
-          rpcURL = contractData.mainnetRPCURL;
-          caver = new Caver(rpcURL);
-        }
-        tempBalance = await caver.klay.getBalance(account);
-        // tempBalance = await web3.klay.getBalance(account);
-      }
-      // setBalance((tempBalance/1000000000000000000));
-      // setBalance(balance2);
-      console.log(balance);
-      // console.log(balance2);
-    }
+  
+    // console.log( account);
+    // if(account != null && infuraCode != null){
+    //     refreshBalance();
+    // }
+
+    refreshBalance()
   }
   const changeChain = (chainState) => {
+    // 여기도 가능은 할듯 
+    // Init(chainState)
     setChain(chainState);
+
   }
   const changeAddress = (addressState) => {
     getDataWithAddress(addressState);
@@ -519,17 +480,20 @@ useEffect(() => {
   }
   const doLogin = async (chain, passwordFromSignPage) => {
     setLoading(true);
+    // 여기서 init 할까 
+    Init(chain)
     ipcRenderer.send('getWallet', {
       chain : chain
     })
     setPassword(passwordFromSignPage);
+    electronStore.set("password", passwordFromSignPage);
   }
   const makeNewWallet = async () => {
     setLoading(true);
     let newWallet;
     let ret;
     let newWalletEncrypt;
-    console.log(chain);
+    // console.log(chain);
     if(chain == "ETH"){
       newWallet = await web3.eth.accounts.wallet.create(1);
       ret = await web3.eth.accounts.wallet.add(newWallet[0].privateKey);
@@ -1053,6 +1017,7 @@ const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수�
 const createWallet = async (password, infuraCodeArg) =>{
   setLoading(true);
   setInfuraCode(infuraCodeArg);
+  electronStore.set('infuraCode', infuraCodeArg);
   let ret;
   let walletTmp;
   if(chain == "ETH"){
@@ -1087,7 +1052,7 @@ const createWallet = async (password, infuraCodeArg) =>{
               password={password}
               />
               <Layout style={{justifyContent: "initial", padding: "0px", height: "1000px",backgroundColor: "#363940"}}>
-                <SideNav2 />
+                <SideNav />
                 <Routes>
                   <Route path="/" element={
                 <Wallet

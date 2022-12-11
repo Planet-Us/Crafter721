@@ -6,6 +6,9 @@ const { atRule } = require('postcss');
 const {dialog, shell} = require('electron');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
+const Store = require('electron-store');
+const store = new Store();
+
 // var remote = window.require('electron').remote;
 // var electronFs = remote.require('fs');
 // var electronDialog = remote.dialog;
@@ -28,6 +31,8 @@ function createWindow() {
         }
     });
     // win.setMenu(null);
+    Store.initRenderer();
+    // store.set('foo', 'bar');
     const isWindows = process.platform === 'win32';
   let needsFocusFix = false;
   let triggeringProgrammaticBlur = false;
@@ -76,6 +81,14 @@ function createWindow() {
 }
 
 app.on('ready', createWindow);
+
+// IPC listener
+ipcMain.on('electron-store-get', async (event, val) => {
+    event.returnValue = store.get(val);
+});
+  ipcMain.on('electron-store-set', async (event, key, val) => {
+    store.set(key, val);
+});
 
 ipcMain.on('createWallet', (event, arg) =>{
     console.log(arg.wallet);
