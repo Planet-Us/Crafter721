@@ -46,6 +46,8 @@ if(chain === "ETH"){
   const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
   const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
 
+  // NFT , Gacha Contract
+
   useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
 } else if(chain == "KLAY"){
   const mainnetWeb3 = new Caver(`${contractData.mainnetRPCURL}`);
@@ -60,26 +62,26 @@ if(chain === "ETH"){
 // Init("ETH");
 
 function App() {
-    
+  
+  // address 로 바꾸기 
   const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
   const [privateKey, setPrivateKey] = useState('');
   const [contractAddress, setContractAddress] = useState("");
   const [chain, setChain] = useState("ETH");
   const [network, setNetwork] = useState("mainnet");
-  const [accountObj, setAccountObj] = useState({});
-  // const [balance, setBalance] = useState(0);
+  // zustand 로 관리
   const [walletList, setWalletList] = useState([]);
   const [contractListMain, setContractListMain] = useState([]);
   const [contractListTest, setContractListTest] = useState([]);
+  // electron store 에서 가져오기
   const [infuraCode, setInfuraCode] = useState("");
   const [totalSupply, setTotalSupply] = useState(0);
   const [loading, setLoading] = useState(false);
   const [balance , refreshBalance] = useBalance(account);
   const setStoreChain = useCrafterStore(state => state.setChain);
   const setStoreNetwork = useCrafterStore(state => state.setNetwork);
-  const dataId = useRef(0);
-  const contractFlag = [contractListMain, contractListTest];
+  
   const Layout = styled.div`
     display: flex;
     justify-content: space-between;
@@ -120,7 +122,6 @@ useEffect(() => {
     setAccount(selectedAddress.address.toString());
     changeNetwork(network);
     setPrivateKey(selectedAddress.privateKey);
-    setAccountObj(selectedAddress);
     
     ipcRenderer.send('getContractList', {
       chain: chain,
@@ -486,7 +487,7 @@ useEffect(() => {
       chain : chain
     })
     setPassword(passwordFromSignPage);
-    electronStore.set("password", passwordFromSignPage);
+    electronStore.set("password"+chain, passwordFromSignPage);
   }
   const makeNewWallet = async () => {
     setLoading(true);
