@@ -278,40 +278,16 @@ useEffect(() => {
   });
   
   const changeNetwork = async(networkState) => {
-    let ret = await setNetwork(networkState);
-    console.log(networkState);
+    setNetwork(networkState);
     setStoreNetwork(networkState);
     setStoreChain(chain);
-    let tempBalance;
-    console.log(account);
-    console.log(infuraCode);
-    console.log(account != null && infuraCode != null);
-    if(account != null && infuraCode != null){
-      if(chain == "ETH"){
-        // if(network == "goerli"){
-        //     web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-        // }else if(network == "mainnet"){
-        //     web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-        // }
-        // tempBalance = await web3.eth.getBalance(account);
-        // 옵션
-        refreshBalance();
-      }else if(chain == "KLAY"){
-        if(network == "baobab"){
-          rpcURL = contractData.baobabRPCURL;
-          caver = new Caver(rpcURL);
-        }else if(network == "mainnet"){
-          rpcURL = contractData.mainnetRPCURL;
-          caver = new Caver(rpcURL);
-        }
-        tempBalance = await caver.klay.getBalance(account);
-        // tempBalance = await web3.klay.getBalance(account);
-      }
-      // setBalance((tempBalance/1000000000000000000));
-      // setBalance(balance2);
-      console.log(balance);
-      // console.log(balance2);
-    }
+  
+    // console.log( account);
+    // if(account != null && infuraCode != null){
+    //     refreshBalance();
+    // }
+
+    refreshBalance()
   }
   const changeChain = (chainState) => {
     // 여기도 가능은 할듯 
