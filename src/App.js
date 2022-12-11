@@ -39,35 +39,6 @@ const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
 
 function Init(chain){
-  // console.log(store);
-  // let tmp = store.get('foo')
-  // window.electron.store.set('foo', 'bar');
-    // or
-    // console.log(window.electron.store.get('foo'));
-
-    // ipcRenderer.send('electron-store-set', 'foo', 'bar');
-
-    // console.log(ipcRenderer.sendSync('electron-store-get', 'foo'));
-
-    // console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww");
-    electronStore.set("foo", "bar123999");
-    console.log(electronStore.get("foo"));
-  // const mainnetWeb3 = new Web3(`${urls[chain][network]}${infuraCode}`);
-  // const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
-  // const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
-
-  // const mainnetWeb3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-  // const testnetWeb3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-
-// }else if(chain == "KLAY"){
-//   if(network == "baobab"){
-//     rpcURL = contractData.baobabRPCURL;
-//     caver = new Caver(rpcURL);
-//   }else if(network == "mainnet"){
-//     rpcURL = contractData.mainnetRPCURL;
-//     caver = new Caver(rpcURL);
-//   }
-//   tempBalance = await caver.klay.getBalance(account);
 
 if(chain === "ETH"){
   const infuraCode = electronStore.get("infuraCode");
@@ -79,7 +50,7 @@ if(chain === "ETH"){
 } else if(chain == "KLAY"){
   const mainnetWeb3 = new Caver(`${contractData.mainnetRPCURL}`);
   const testnetWeb3 = new Caver(`${contractData.baobabRPCURL}`);
-  console.log(mainnetWeb3);
+  
   useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
 }
 
@@ -117,10 +88,6 @@ function App() {
     font-size: 1.5rem;
     font-family: sans-serif;
   `;
-
-useEffect(() => {
-    console.log("useEffect", balance);
-},[]);
 
 useEffect(() => {
   ipcRenderer.once('getContractList-reply', async (event, contractListData) => { 
@@ -162,8 +129,8 @@ useEffect(() => {
     });
   }
   useEffect(() => {
-    console.log(account);
-    console.log(allWalletData);
+    // console.log(account);
+    // console.log(allWalletData);
       changeNetwork(network);
   })
 
@@ -180,7 +147,7 @@ useEffect(() => {
           // Init(chain,network,walletTmp.infuraCode);
           if(password == walletTmp.password){
             for(let i = 0;i<walletTmp.walletData.length;i++){
-              console.log(walletTmp.walletData[i]);
+              // console.log(walletTmp.walletData[i]);
               let decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData[i], password);
               walletArray.push(decryptedWallet);
               web3.eth.accounts.wallet.add(decryptedWallet.privateKey);
@@ -203,11 +170,9 @@ useEffect(() => {
           }
         }else if(chain == "KLAY"){
           // Init(chain,network,walletTmp.infuraCode);
-          console.log("KLAY");
-          console.log(password);
-          console.log(walletTmp.password);
+          
           if(password == walletTmp.password){
-            console.log(walletTmp.walletData);
+            // console.log(walletTmp.walletData);
             if(typeof walletTmp.walletData.length != "undefined"){
               for(let i = 0;i<walletTmp.walletData.length;i++){
                 let decryptedWallet = await caver.klay.accounts.decrypt(walletTmp.walletData[i], password);
@@ -250,7 +215,7 @@ useEffect(() => {
     ipcRenderer.on('addWallet-reply', async (event, walletTmp) => { //header에서 시점이 안맞으니까 addwallet-reply를 header에도 넣어서 주소 따로 추가하도록 만들어야함
       let walletArray = new Array();
       let decryptedWallet;
-      console.log(walletTmp);
+      // console.log(walletTmp);
       if(password.length >0){
         if(chain == "ETH"){
             decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData, password);
@@ -262,8 +227,6 @@ useEffect(() => {
           setAccount(decryptedWallet.address.toString());
           setPrivateKey(decryptedWallet.privateKey);
           setAccountObj(decryptedWallet);
-          // 이거 왜하는지 물어보기
-          // setBalance(0);
           
           ipcRenderer.send('getContractList', {
             chain: chain,
@@ -530,7 +493,7 @@ useEffect(() => {
     let newWallet;
     let ret;
     let newWalletEncrypt;
-    console.log(chain);
+    // console.log(chain);
     if(chain == "ETH"){
       newWallet = await web3.eth.accounts.wallet.create(1);
       ret = await web3.eth.accounts.wallet.add(newWallet[0].privateKey);
