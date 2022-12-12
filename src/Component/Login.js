@@ -47,7 +47,7 @@ export default function Login(props) {
         ipcRenderer.send('checkWallet', {
         });
 
-    });
+    }, []);
     useEffect(() =>{
       ipcRenderer.on('checkWallet-reply', async (event, data) => { 
           console.log(data);
@@ -61,7 +61,7 @@ export default function Login(props) {
       return () => {
         ipcRenderer.removeAllListeners('checkWallet-reply');
       };
-    });
+    }, []);
 
     const handleChange = (e) => {
         setPassword(e.target.value);

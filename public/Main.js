@@ -27,7 +27,10 @@ function createWindow() {
             nodeIntegrationInWorker: true // <---  for web workers
         }
     });
-    // win.setMenu(null);
+    console.log(process.env.NODE_ENV + " mode");
+    if(process.env.NODE_ENV.toString() != "dev"){
+        win.setMenu(null);
+    }
     const isWindows = process.platform === 'win32';
   let needsFocusFix = false;
   let triggeringProgrammaticBlur = false;
