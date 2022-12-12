@@ -11,4 +11,8 @@ export const useCrafterStore = create((set) => ({
     setNetwork: (network) => set({ network }),
     chain: null,
     setChain: (chain) => set({ chain }),
+    nftContract: null,
+    setNftContract: (nftContract) => set({ nftContract }),
+    gachaContract: null,
+    setGachaContract: (gachaContract) => set({ gachaContract }),
 }))

@@ -18,7 +18,7 @@ import ManageNFT from './pages/ManageNFT.js';
 import Web3 from 'web3';
 import Caver from "caver-js";
 
-import { useBalance, useCrafterStore } from './hooks';
+import { useBalance, useCrafterStore, useGachaContract, useNFTContract } from './hooks';
 
 import {urls} from './urls'
 // const store = window.Electron.store
@@ -33,10 +33,32 @@ let allWalletData;
 let allContractData;
 
 let gachaAddress = contractData.gachaAddress;
-let gachaABI = contractData.gachaKlayABI;
+// let gachaABI = contractData.gachaKlayABI;
 
 const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
+
+// useEffect (() =>{ 
+//   if(chain == "ETH"){
+//     if(network == "goerli"){
+//         web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
+//         contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
+//     }else if(network == "mainnet"){
+//         web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+//         contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
+//     }
+//   }else if(chain == "KLAY"){
+//     if(network == "baobab"){
+//       rpcURL = contractData.baobabRPCURL;
+//       caver = new Caver(rpcURL);
+//       contract = caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressbaobab);
+//     }else if(network == "mainnet"){
+//       rpcURL = contractData.mainnetRPCURL;
+//       caver = new Caver(rpcURL);
+//       contract = caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
+//     }
+//   }
+// }, [network]);
 
 function Init(chain){
 
@@ -46,14 +68,27 @@ if(chain === "ETH"){
   const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
   const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
 
+  //mainnet , testnet 별로필요하네 .... 일단 오늘은 이더까지만
   // NFT , Gacha Contract
+  // contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
+  const mainnetNFTContract = new mainnetWeb3.eth.Contract(contractData.ethNFTABI,contractAddress);
+  const mainnetGachaContract = new mainnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
 
-  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
+  const testnetNFTContract = new testnetWeb3.eth.Contract(contractData.ethNFTABI,contractAddress);
+  const testnetGachaContract = new testnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
+
+  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3,  mainnetNFTContract:mainnetNFTContract, mainnetGachaContract:mainnetGachaContract, testnetNFTContract:testnetNFTContract, testnetGachaContract:testnetGachaContract});
 } else if(chain == "KLAY"){
   const mainnetWeb3 = new Caver(`${contractData.mainnetRPCURL}`);
   const testnetWeb3 = new Caver(`${contractData.baobabRPCURL}`);
+
+  const mainnetNFTContract = mainnetWeb3.contract.create(contractData.klayNFTABI,contractAddress);
+  const mainnetGachaContract = mainnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
+
+  const testnetNFTContract = testnetWeb3.contract.create(contractData.klayNFTABI,contractAddress);
+  const testnetGachaContract = testnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressbaobab);
   
-  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
+  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3,  mainnetNFTContract:mainnetNFTContract, mainnetGachaContract:mainnetGachaContract, testnetNFTContract:testnetNFTContract, testnetGachaContract:testnetGachaContract});
 }
 
 }
@@ -79,8 +114,12 @@ function App() {
   const [totalSupply, setTotalSupply] = useState(0);
   const [loading, setLoading] = useState(false);
   const [balance , refreshBalance] = useBalance(account);
+  // 로그인 시점에서 zustand 에 저장
   const setStoreChain = useCrafterStore(state => state.setChain);
   const setStoreNetwork = useCrafterStore(state => state.setNetwork);
+
+  const nftContract = useNFTContract();
+  const gachaContract = useGachaContract();
   
   const Layout = styled.div`
     display: flex;
@@ -158,7 +197,7 @@ useEffect(() => {
             changeNetwork(network);
             setAccount(walletArray[0].address.toString());
             setPrivateKey(walletArray[0].privateKey);
-            setAccountObj(walletArray[0]);
+            // setAccountObj(walletArray[0]);
             
             ipcRenderer.send('getContractList', {
               chain: chain,
@@ -192,7 +231,7 @@ useEffect(() => {
             changeNetwork(network);
             setAccount(walletArray[0].address.toString());
             setPrivateKey(walletArray[0].privateKey);
-            setAccountObj(walletArray[0]);
+            // setAccountObj(walletArray[0]);
             
             ipcRenderer.send('getContractList', {
               chain: chain,
@@ -227,7 +266,7 @@ useEffect(() => {
           setWalletList(allWalletData);
           setAccount(decryptedWallet.address.toString());
           setPrivateKey(decryptedWallet.privateKey);
-          setAccountObj(decryptedWallet);
+          // setAccountObj(decryptedWallet);
           
           ipcRenderer.send('getContractList', {
             chain: chain,
@@ -244,7 +283,6 @@ useEffect(() => {
   const changeNetwork = async(networkState) => {
     setNetwork(networkState);
     setStoreNetwork(networkState);
-    setStoreChain(chain);
   
     // console.log( account);
     // if(account != null && infuraCode != null){
@@ -262,6 +300,8 @@ useEffect(() => {
   const changeAddress = (addressState) => {
     getDataWithAddress(addressState);
   }
+
+  // 이거 다 제거 가능 , hooks 화로 .
   useEffect (() =>{ 
     if(chain == "ETH"){
       if(network == "goerli"){
@@ -483,6 +523,7 @@ useEffect(() => {
     setLoading(true);
     // 여기서 init 할까 
     Init(chain)
+    setStoreChain(chain);
     ipcRenderer.send('getWallet', {
       chain : chain
     })
