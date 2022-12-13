@@ -203,10 +203,156 @@
 			"type": "function"
 		}
 	],
+	"gachaAddressMumbai": "0x8de34dE974eB96a4745043f79776067a1b1D1f41",
+	"gachaAddressPoly": "",
 	"gachaAddressKlay" : "0xdcaF7B56F6122512B5D9fe7bCE8CD851E7DD602F",
 	"gachaAddressBaobab": "0x74f290106174634418039d4EfC83DE625F85518E",
     "gachaAddressRinkeby" : "0x084a02a82DC08722320de1abd838d8dF4B8FffE6",
     "gachaAddressEth" : "0x4B5B8129cB97c39162651dB461F72999725eFb05",
+	"gachaPolyABI": [
+		{
+		  "inputs": [],
+		  "stateMutability": "nonpayable",
+		  "type": "constructor"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "contractList",
+		  "outputs": [
+			{
+			  "internalType": "address",
+			  "name": "",
+			  "type": "address"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [],
+		  "name": "counter",
+		  "outputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "",
+			  "type": "uint256"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "index",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "deleteList",
+		  "outputs": [],
+		  "stateMutability": "nonpayable",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "string",
+			  "name": "name",
+			  "type": "string"
+			},
+			{
+			  "internalType": "string",
+			  "name": "symbol",
+			  "type": "string"
+			},
+			{
+			  "internalType": "string",
+			  "name": "_baseURL",
+			  "type": "string"
+			},
+			{
+			  "internalType": "uint256",
+			  "name": "_maxSupply",
+			  "type": "uint256"
+			},
+			{
+			  "internalType": "uint256",
+			  "name": "_price",
+			  "type": "uint256"
+			},
+			{
+			  "internalType": "uint256",
+			  "name": "_purchaseLimit",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "deployNFTContract",
+		  "outputs": [
+			{
+			  "internalType": "address",
+			  "name": "",
+			  "type": "address"
+			}
+		  ],
+		  "stateMutability": "nonpayable",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "start",
+			  "type": "uint256"
+			},
+			{
+			  "internalType": "uint256",
+			  "name": "end",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "getList",
+		  "outputs": [
+			{
+			  "internalType": "string[1000]",
+			  "name": "",
+			  "type": "string[1000]"
+			},
+			{
+			  "internalType": "address[1000]",
+			  "name": "",
+			  "type": "address[1000]"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		},
+		{
+		  "inputs": [
+			{
+			  "internalType": "uint256",
+			  "name": "",
+			  "type": "uint256"
+			}
+		  ],
+		  "name": "nameList",
+		  "outputs": [
+			{
+			  "internalType": "string",
+			  "name": "",
+			  "type": "string"
+			}
+		  ],
+		  "stateMutability": "view",
+		  "type": "function"
+		}
+	  ],
 	"gachaEthABI": [
 		{
 			"inputs": [],
@@ -1949,7 +2095,11 @@
 			"type": "function"
 		}
 	],
-		"baobabRPCURL" : "https://api.baobab.klaytn.net:8651/",
-		"mainnetRPCURL" : "https://public-node-api.klaytnapi.com/v1/cypress"
+		"klayTestnetRPCURL" : "https://api.baobab.klaytn.net:8651/",
+		"klayMainnetRPCURL" : "https://public-node-api.klaytnapi.com/v1/cypress",
+		"ethMainnetRPCURL": "https://mainnet.infura.io/v3/",
+		"ethTestnetRPCURL": "https://goerli.infura.io/v3/",
+		"polyMainnetRPCURL": "https://polygon-mainnet.infura.io/v3/",
+		"poluTestnetRPCURL": "https://polygon-mumbai.infura.io/v3/"
 	
 	}
