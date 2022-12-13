@@ -25,7 +25,7 @@ import {urls} from './urls'
 import electronStore from './utils/electronStore';
 
 const ipcRenderer = window.require('electron').ipcRenderer;
-let rpcURL = contractData.mainnetRPCURL;
+let rpcURL = contractData.klayMainnetRPCURL;
 let caver = new Caver(rpcURL);
 let web3;
 let contract;
@@ -48,9 +48,9 @@ if(chain === "ETH"){
 
   useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
 } else if(chain == "KLAY"){
-  const mainnetWeb3 = new Caver(`${contractData.mainnetRPCURL}`);
-  const testnetWeb3 = new Caver(`${contractData.baobabRPCURL}`);
-  
+  const mainnetWeb3 = new Caver(`${contractData.klayMainnetRPCURL}`);
+  const testnetWeb3 = new Caver(`${contractData.klayTestnetRPCURL}`);
+  console.log(mainnetWeb3);
   useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
 }
 
@@ -91,6 +91,7 @@ function App() {
 
 useEffect(() => {
   ipcRenderer.once('getContractList-reply', async (event, contractListData) => { 
+    setLoading(false);
     allContractData = contractListData;
     setContractListMain(contractListData.mainnet);
     setContractListTest(contractListData.testnet);
@@ -107,7 +108,7 @@ useEffect(() => {
   return () => {
     ipcRenderer.removeAllListeners('createWallet-reply');
   };
-});
+}, []);
 
   const getDataWithAddress = async (address) => {
     setLoading(true);
@@ -132,7 +133,7 @@ useEffect(() => {
     // console.log(account);
     // console.log(allWalletData);
       changeNetwork(network);
-  })
+  }, [])
 
   useEffect(() => {
     ipcRenderer.on('getWallet-reply', async (event, walletTmp) => { 
@@ -272,11 +273,11 @@ useEffect(() => {
       }
     }else if(chain == "KLAY"){
       if(network == "baobab"){
-        rpcURL = contractData.baobabRPCURL;
+        rpcURL = contractData.klayTestnetRPCURL;
         caver = new Caver(rpcURL);
         contract = caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressbaobab);
       }else if(network == "mainnet"){
-        rpcURL = contractData.mainnetRPCURL;
+        rpcURL = contractData.klayMainnetRPCURL;
         caver = new Caver(rpcURL);
         contract = caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
       }
@@ -378,11 +379,11 @@ useEffect(() => {
       }
     }else if(chain == "KLAY"){
       if(network == "baobab"){
-        rpcURL = contractData.baobabRPCURL;
+        rpcURL = contractData.klayTestnetRPCURL;
         caver = new Caver(rpcURL);
         nftContract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
       }else if(network == "mainnet"){
-        rpcURL = contractData.mainnetRPCURL;
+        rpcURL = contractData.klayMainnetRPCURL;
         caver = new Caver(rpcURL);
         nftContract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
       }
@@ -577,6 +578,7 @@ useEffect(() => {
         from: account
       })
       .then(function(gasAmount) {
+        console.log(gasAmount);
         if(gasAmount > 1000000000){
           alert('Method ran out of gas');
           fee = -1;
@@ -634,12 +636,12 @@ useEffect(() => {
         }
     }else if(chain == "KLAY"){
       if(network == "baobab"){
-        rpcURL = contractData.baobabRPCURL;
+        rpcURL = contractData.klayTestnetRPCURL;
         caver = new Caver(rpcURL);
         gachaAddress = contractData.gachaAddressBaobab;
         contract = await caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressBaobab);
       }else if(network == "mainnet"){
-        rpcURL = contractData.mainnetRPCURL;
+        rpcURL = contractData.klayMainnetRPCURL;
         caver = new Caver(rpcURL);
         gachaAddress = contractData.gachaAddressKlay;
         contract = await caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
@@ -831,11 +833,11 @@ const transferNFT = async (contractAddress, tokenList, addressList) => {
     }
   }else if(chain == "KLAY"){
     if(network == "baobab"){
-      rpcURL = contractData.baobabRPCURL;
+      rpcURL = contractData.klayTestnetRPCURL;
       caver = new Caver(rpcURL);
       contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
     }else if(network == "mainnet"){
-      rpcURL = contractData.mainnetRPCURL;
+      rpcURL = contractData.klayMainnetRPCURL;
       caver = new Caver(rpcURL);
       contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
     }
@@ -945,11 +947,11 @@ const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수�
     }
   }else if(chain == "KLAY"){
     if(network == "baobab"){
-      rpcURL = contractData.baobabRPCURL;
+      rpcURL = contractData.klayTestnetRPCURL;
       caver = new Caver(rpcURL);
       contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
     }else if(network == "mainnet"){
-      rpcURL = contractData.mainnetRPCURL;
+      rpcURL = contractData.klayMainnetRPCURL;
       caver = new Caver(rpcURL);
       contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
     }
