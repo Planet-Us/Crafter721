@@ -11,4 +11,6 @@ export const useCrafterStore = create((set) => ({
     setNetwork: (network) => set({ network }),
     chain: null,
     setChain: (chain) => set({ chain }),
+    category: null,
+    setCategory: (category) => set({ category }),
 }))

@@ -7,11 +7,11 @@ export const urls = {
         mainnet:"https://api.baobab.klaytn.net:8651",
         testnet:"https://api.baobab.klaytn.net:8651"
     },
-    polygon:{
-        mainnet:"",
-        testnet:""
+    POLY:{
+        mainnet:"https://polygon-mainnet.infura.io/v3/",
+        testnet:"https://polygon-mumbai.infura.io/v3/"
     },
-    tron:{
+    TRON:{
         mainnet:"",
         testnet:""
     }

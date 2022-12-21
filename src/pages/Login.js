@@ -9,7 +9,6 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Card from '@mui/material/Card';
-import ethers from 'ethers';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Logo from '../Logo.png';
 const ipcRenderer = window.require('electron').ipcRenderer;
@@ -28,12 +27,9 @@ const HtmlTooltip = styled(({ className, ...props }) => (
 
 export default function Login(props) {
     
-    const [account, setAccount] = useState("");
     const [password, setPassword] = useState("");
     const [chain, setChain] = useState('ETH');
-    const [network, setNetwork] = useState('Main');
     const [infuraCode, setInfuraCode] = useState("");
-    const [loading, setLoading] = useState(false);
     const [newPass, setNewPass] = useState('');
     const [newPass2, setNewPass2] = useState('');
     const [passwordComment, setPasswordComment] = useState("Password must contain at least 1 Capital letter, 1 Symbol.");
@@ -41,6 +37,7 @@ export default function Login(props) {
     const [makeAcountFlag, setMakeAccountFlag] = useState(true);
     const [checkKlayWallet, setCheckKlayWallet] = useState(false);
     const [checkEthWallet, setCheckEthWallet] = useState(false);
+    const [checkPolyWallet, setCheckPolyWallet] = useState(false);
     let passwordArr = [newPass, newPass2];
 
     useEffect(() => {
@@ -57,6 +54,10 @@ export default function Login(props) {
           if(data.ethWallet == 1){
               setCheckEthWallet(true);
           }
+          if(data.polyWallet == 1){
+            setCheckPolyWallet(true);
+          }
+
       });
       return () => {
         ipcRenderer.removeAllListeners('checkWallet-reply');
@@ -107,14 +108,11 @@ export default function Login(props) {
         props.changeChain(e.target.value)
     }
     const doLoginFromApp = async () => {
-        setLoading(true);
         props.doLogin(chain,password);
         
     }
     const makeAccount = async () => {
-        setLoading(true);
         let ret = await props.createWallet(password, infuraCode);
-        setLoading(false);
         setNewAccountPage(false);
     }
     const getApiKey = async () => {
@@ -143,7 +141,7 @@ export default function Login(props) {
                 <span>CONFIRM PASSWORD</span>
                 <TextField style={{width : '100%'}} value={newPass2} onChange={(e) => newPass2Change(e)} type="password" id="outlined-basic" label="Password" variant="outlined" />
                 {passwordComment}
-                {chain == "ETH" ?
+                {chain == "ETH" || chain == "POLY" ?
                     <>
                         <span>INFURA API KEY</span>
                         <HtmlTooltip
@@ -178,12 +176,13 @@ export default function Login(props) {
                         >
                         <MenuItem value={"ETH"}>Ethereum</MenuItem>
                         <MenuItem value={"KLAY"}>Klaytn</MenuItem>
+                        <MenuItem value={"POLY"}>Polygon</MenuItem>
                         </Select>
                     </FormControl>
                 </Box>
                 <span>PASSWORD</span>
                 <TextField style={{width : '100%', color: "white", border: "1px solid white"}} type="password" value={password} onChange={(e) => handleChange(e)} id="outlined-basic" label="Outlined" variant="outlined" />
-                {(chain == "KLAY" && checkKlayWallet == 1) || (chain == "ETH" && checkEthWallet == 1) ?
+                {(chain == "KLAY" && checkKlayWallet == 1) || (chain == "ETH" && checkEthWallet == 1) || (chain == "POLY" && checkPolyWallet == 1) ?
                     <Button style={{marginTop: "10px", borderRadius: "24px"}} onClick={doLoginFromApp} variant="contained">Sign In</Button>
                 : 
                     <Button style={{marginTop: "10px", borderRadius: "24px"}} onClick={newAccountChange} variant="contained">New Account</Button>

@@ -41,10 +41,14 @@ export default function Header(props) {
         console.log(walletTmp);
         if(props.password.length >0){
             if(props.chain == "ETH"){
-                web3 = new Web3('https://goerli.infura.io/v3/' + props.infuraCode);
+                web3 = new Web3('https://mainnet.infura.io/v3/' + props.infuraCode);
+                decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData, props.password);
+            }else if(props.chain == "POLY"){
+                web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + props.infuraCode);
                 decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData, props.password);
             }else if(props.chain == "KLAY"){
-                web3 = new Web3('https://mainnet.infura.io/v3/' + props.infuraCode);
+                rpcURL = contractData.baobabRPCURL;
+                caver = new Caver(rpcURL);
                 decryptedWallet = await caver.klay.accounts.decrypt(walletTmp.walletData, props.password);
             }
             walletArray.push({
@@ -123,6 +127,31 @@ export default function Header(props) {
                             >
                                 <MenuItem value={"mainnet"}>Mainnet</MenuItem>
                                 <MenuItem value={"goerli"}>Goerli</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    :
+                    props.chain == "POLY" ?
+                    
+                    <Box sx={{ maxWidth: "20%", width: "20%", color: "white"}}>
+                        <FormControl fullWidth sx={{color: "white" }}>
+                            {/* <InputLabel id="demo-simple-select-label">Chain</InputLabel> */}
+                            <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={network}
+                            label="Network"
+                            onChange={networkChange}
+                            className={classes.select}
+                            inputProps={{
+                                classes: {
+                                    icon: classes.icon,
+                                },
+                            }}
+                            sx={{ backgroundColor: 'transparent', color: "white" }}
+                            >
+                                <MenuItem value={"mainnet"}>Mainnet</MenuItem>
+                                <MenuItem value={"mumbai"}>Mumbai</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>

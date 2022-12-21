@@ -5,7 +5,6 @@ import Card from '@mui/material/Card';
 import FormControl from '@mui/material/FormControl';
 import { styled } from '@mui/material/styles';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';

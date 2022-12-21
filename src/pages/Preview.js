@@ -35,9 +35,7 @@ import { makeStyles } from '@mui/styles';
 export default function Preview(props) {
     const classes = useStyles();
 
-    const [address, setAddress] = useState("");
     const [contractAddress, setContractAddress] = useState("");
-    const [loading, setLoading] = useState(false);
     const [name, setName] = useState("");
     const [nftname, setnftName] = useState("");
     const [jsons, setJsons] = useState([]);
