@@ -1,30 +1,19 @@
 import react, {Component, useEffect, useState} from 'react';
-import {TextField, Button} from "@mui/material"
-import axios from 'axios';
-import { DataGrid, getDataGridUtilityClass } from '@mui/x-data-grid';
-import CsvDownload from 'react-json-to-csv';
 import Box from '@mui/material/Box';
 import contractData from '../Contract';
 import Web3 from 'web3';
 import Caver from "caver-js";
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import { makeStyles } from '@mui/styles';
-import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import klaytnFunc from '../klaytnFunc';
-import ethFunc from '../ethFunc';
 import '../bootstrap.min.css';
-import { INSPECT_MAX_BYTES } from 'buffer';
 import Logo from '../Logo.png'
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.mainnetRPCURL;
 let caver = new Caver(rpcURL);
 let web3;
 let walletArray = new Array();
-let newWallet = new String();
 
 
 export default function Header(props) {
