@@ -18,7 +18,7 @@ import ManageNFT from './pages/ManageNFT.js';
 import Web3 from 'web3';
 import Caver from "caver-js";
 
-import { useBalance, useCrafterStore, useGachaContract } from './hooks';
+import { useBalance, useCrafterStore, useGachaContract, useWeb3 } from './hooks';
 
 import {urls} from './urls'
 // const store = window.Electron.store
@@ -27,7 +27,7 @@ import electronStore from './utils/electronStore';
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.klayMainnetRPCURL;
 let caver = new Caver(rpcURL);
-let web3;
+// let web3;
 let contract;
 let allWalletData;
 let allContractData;
@@ -111,6 +111,9 @@ function App() {
   const [totalSupply, setTotalSupply] = useState(0);
   const [loading, setLoading] = useState(false);
   const [balance , refreshBalance] = useBalance(account);
+
+  // let 일 필요없이 , const 이면 됨
+  let web3 = useWeb3();
   const [gachaContract, gachaAddress] = useGachaContract();
 
   const setStoreChain = useCrafterStore(state => state.setChain);
@@ -299,6 +302,9 @@ useEffect(() => {
   const changeAddress = (addressState) => {
     getDataWithAddress(addressState);
   }
+
+// 다 제거가능 , klay rpc URL??
+// contract 변수의 이름을 gachaContract 로 바꿀것, 
   useEffect (() =>{ 
     if(chain == "ETH"){
       if(network == "goerli"){
@@ -618,30 +624,31 @@ useEffect(() => {
   }
   const deploySmartContract = async (nftName, symbol, baseURL, maxSupply, price, whiteList, purchaseLimit) =>{
     console.log(baseURL);
-    let gachaAddress;
+    // let gachaAddress;
     if(chain == "ETH" || chain == "POLY"){
-      if(chain == "ETH"){
-        if(network == "goerli"){
-          web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
-          contract = await new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
-          gachaAddress = contractData.gachaAddressRinkeby;
-        }else if(network == "mainnet"){
-            web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-            contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
-            gachaAddress = contractData.gachaAddressEth;
-        }
-      }else 
-      if(chain == "POLY"){
-        if(network == "mumbai"){
-          web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
-          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressMumbai);
-          gachaAddress = contractData.gachaAddressMumbai;
-        }else if(network == "mainnet"){
-          web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
-          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressPoly);
-          gachaAddress = contractData.gachaAddressPoly;
-        }
-      }
+      // if(chain == "ETH"){
+      //   if(network == "goerli"){
+      //     web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
+      //     contract = await new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
+      //     gachaAddress = contractData.gachaAddressRinkeby;
+      //   }else if(network == "mainnet"){
+      //       web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+      //       contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
+      //       gachaAddress = contractData.gachaAddressEth;
+      //   }
+      // }else 
+      // if(chain == "POLY"){
+      //   if(network == "mumbai"){
+      //     web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
+      //     contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressMumbai);
+      //     gachaAddress = contractData.gachaAddressMumbai;
+      //   }else if(network == "mainnet"){
+      //     web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
+      //     contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressPoly);
+      //     gachaAddress = contractData.gachaAddressPoly;
+      //   }
+      // }
+      let contract = gachaContract;
       let ret = await web3.eth.accounts.wallet.add(privateKey);
       let fee;
       console.log(balance);
