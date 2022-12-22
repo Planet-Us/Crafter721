@@ -18,7 +18,7 @@ import ManageNFT from './pages/ManageNFT.js';
 import Web3 from 'web3';
 import Caver from "caver-js";
 
-import { useBalance, useCrafterStore } from './hooks';
+import { useBalance, useCrafterStore, useGachaContract } from './hooks';
 
 import {urls} from './urls'
 // const store = window.Electron.store
@@ -40,32 +40,56 @@ const KLAY_FEE_REF = 3;
 
 function Init(chain){
 
-if(chain === "ETH"){
-  const infuraCode = electronStore.get("infuraCode");
+  
 
-  const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
-  const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
-  const category = "eth";
+  
 
-  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, category: category});
-} else if(chain == "KLAY"){
-  const mainnetWeb3 = new Caver(`${contractData.klayMainnetRPCURL}`);
-  const testnetWeb3 = new Caver(`${contractData.klayTestnetRPCURL}`);
-  console.log(mainnetWeb3);
-  const category = "klay";
+  if(chain === "ETH"){
+    const infuraCode = electronStore.get("infuraCode");
 
-  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, category: category});
-}else if(chain == "POLY"){
-  const infuraCode = electronStore.get("infuraCode");
-  const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
-  const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
-  console.log(mainnetWeb3);
-  const category = "eth";
+    const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
+    const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
 
-  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, category: category});
+    const mainnetGachaContract = new mainnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
+    const testnetGachaContract = new testnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
+
+    const mainnetGachaAddress = contractData.gachaAddressEth;
+    const testnetGachaAddress = contractData.gachaAddressRinkeby;
+
+    const category = "eth";
+
+    useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
+  } else if(chain == "KLAY"){
+    const mainnetWeb3 = new Caver(`${contractData.klayMainnetRPCURL}`);
+    const testnetWeb3 = new Caver(`${contractData.klayTestnetRPCURL}`);
+    
+
+    const mainnetGachaContract = mainnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
+    const testnetGachaContract = testnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressbaobab);
+    
+    const mainnetGachaAddress = contractData.gachaAddressKlay;
+    const testnetGachaAddress = contractData.gachaAddressbaobab;
+    
+    const category = "klay";
+    useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
+  }else if(chain == "POLY"){
+    const infuraCode = electronStore.get("infuraCode");
+    const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
+    const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
+
+    const mainnetGachaContract = new mainnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressPoly);
+    const testnetGachaContract = new testnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressMumbai);
+    
+    const mainnetGachaAddress = contractData.gachaAddressPoly;
+    const testnetGachaAddress = contractData.gachaAddressMumbai;
+    
+    const category = "eth";
+    useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
+  }
+
 }
 
-}
+ //mainnet , testnet 별로필요하네 .... 일단 오늘은 이더까
 
 // 원래라면 여기서
 // Init("ETH");
@@ -87,9 +111,10 @@ function App() {
   const [totalSupply, setTotalSupply] = useState(0);
   const [loading, setLoading] = useState(false);
   const [balance , refreshBalance] = useBalance(account);
+  const [gachaContract, gachaAddress] = useGachaContract();
+
   const setStoreChain = useCrafterStore(state => state.setChain);
   const setStoreNetwork = useCrafterStore(state => state.setNetwork);
-  const setCategory = useCrafterStore(state => state.setCategory);
   const dataId = useRef(0);
   const contractFlag = [contractListMain, contractListTest];
   const Layout = styled.div`

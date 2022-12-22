@@ -13,4 +13,12 @@ export const useCrafterStore = create((set) => ({
     setChain: (chain) => set({ chain }),
     category: null,
     setCategory: (category) => set({ category }),
+    mainnetGachaContract: null,
+    setMainnetGachaContract: (mainnetGachaContract) => set({ mainnetGachaContract }),
+    testnetGachaContract: null,
+    setTestnetGachaContract: (testnetGachaContract) => set({ testnetGachaContract }),
+    mainnetGachaAddress: null,
+    setMainnetGachaAddress: (mainnetGachaAddress) => set({ mainnetGachaAddress }),
+    testnetGachaAddress: null,
+    setTestnetGachaAddress: (testnetGachaAddress) => set({ testnetGachaAddress }),
 }))
