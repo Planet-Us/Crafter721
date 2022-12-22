@@ -39,11 +39,6 @@ const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
 
 function Init(chain){
-
-  
-
-  
-
   if(chain === "ETH"){
     const infuraCode = electronStore.get("infuraCode");
 
@@ -65,10 +60,10 @@ function Init(chain){
     
 
     const mainnetGachaContract = mainnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
-    const testnetGachaContract = testnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressbaobab);
+    const testnetGachaContract = testnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressBaobab);
     
     const mainnetGachaAddress = contractData.gachaAddressKlay;
-    const testnetGachaAddress = contractData.gachaAddressbaobab;
+    const testnetGachaAddress = contractData.gachaAddressBaobab;
     
     const category = "klay";
     useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
@@ -624,171 +619,86 @@ useEffect(() => {
   }
   const deploySmartContract = async (nftName, symbol, baseURL, maxSupply, price, whiteList, purchaseLimit) =>{
     console.log(baseURL);
-    // let gachaAddress;
+    let finalPrice;
+    let web3Obj;
+    let feeRef;
     if(chain == "ETH" || chain == "POLY"){
-      // if(chain == "ETH"){
-      //   if(network == "goerli"){
-      //     web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
-      //     contract = await new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
-      //     gachaAddress = contractData.gachaAddressRinkeby;
-      //   }else if(network == "mainnet"){
-      //       web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-      //       contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
-      //       gachaAddress = contractData.gachaAddressEth;
-      //   }
-      // }else 
-      // if(chain == "POLY"){
-      //   if(network == "mumbai"){
-      //     web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
-      //     contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressMumbai);
-      //     gachaAddress = contractData.gachaAddressMumbai;
-      //   }else if(network == "mainnet"){
-      //     web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
-      //     contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressPoly);
-      //     gachaAddress = contractData.gachaAddressPoly;
-      //   }
-      // }
-      let contract = gachaContract;
-      let ret = await web3.eth.accounts.wallet.add(privateKey);
-      let fee;
-      console.log(balance);
-      ret = await contract.methods.deployNFTContract(nftName, symbol, baseURL, maxSupply, web3.utils.toWei(price.toString(), 'ether'), purchaseLimit).estimateGas({
-        from: account
-      })
-      .then(function(gasAmount) {
-        console.log(gasAmount);
-        if(gasAmount > 1000000000){
-          alert('Method ran out of gas');
-          fee = -1;
-        }else if(gasAmount > (balance*100000000)){
-          alert("Insufficient fund in your wallet")
-          fee = -1
-        }else {
-          fee = gasAmount*ETH_FEE_REF;
-        }
-          
-      });
-      if(fee != -1){
-        let tempState = "Name : " + nftName + "\n" +
-                        "Symbol : " + symbol + "\n" +
-                        "Base URL : " + baseURL + "\n" +
-                        "MAX Supply : " + maxSupply + "\n" +
-                        "Price : " + price + "\n" +
-                        "Purchase Limit : " + purchaseLimit + "\n" +
-                        "Gas Fee : " + (fee/1000000000) + "\n" +
-                        "Would you deploy the contract?";
-        let tempConfirm = window.confirm(tempState);
-        if(tempConfirm){
-          setLoading(true);
-          ret = await web3.eth.sendTransaction({
-            from: account,
-            to: gachaAddress,
-            data: contract.methods.deployNFTContract(nftName, symbol, baseURL, maxSupply, web3.utils.toWei(price.toString(), 'ether'), purchaseLimit).encodeABI(),
-            gas: fee        
-          }).then(async (res)=>{
-            setLoading(false);
-            let contractInfo = {
-              "owner" : account,
-              "name" : nftName,
-              "symbol" : symbol,
-              "contract" : res.logs[0].address,
-              "baseURL" : baseURL,
-              "maxSupply" : maxSupply,
-              "price" : price,
-              "purchaseLimit" : purchaseLimit
-            }
-            
-            let ret = await ipcRenderer.send('contractDeployed', {
-              chain: chain,
-              network: network,
-              account : account,
-              contractInfo : contractInfo
-            });
-            setContractAddress(res.logs[0].address);
-            alert("Contract has successfully deployed!");
-            })
-            .catch((err) => {alert("Deploy has failed.");
-            console.log(err)});  
-          }
-          
-        }
+      finalPrice = web3.utils.toWei(price.toString(), 'ether');
+      web3Obj = web3.eth;
+      feeRef = ETH_FEE_REF;
+      let ret = await web3Obj.accounts.wallet.add(privateKey);
     }else if(chain == "KLAY"){
-      if(network == "baobab"){
-        rpcURL = contractData.klayTestnetRPCURL;
-        caver = new Caver(rpcURL);
-        gachaAddress = contractData.gachaAddressBaobab;
-        contract = await caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressBaobab);
-      }else if(network == "mainnet"){
-        rpcURL = contractData.klayMainnetRPCURL;
-        caver = new Caver(rpcURL);
-        gachaAddress = contractData.gachaAddressKlay;
-        contract = await caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
+      finalPrice = await web3.utils.toPeb(price.toString(), 'KLAY');
+      web3Obj = web3.klay;
+      feeRef = KLAY_FEE_REF;
+      if(web3Obj.accounts.wallet.length == 0){
+        let ret = await web3Obj.accounts.createWithAccountKey(account, privateKey);
+        ret = web3Obj.accounts.wallet.add(ret);
       }
-      if(caver.klay.accounts.wallet.length == 0){
-        let ret = await caver.klay.accounts.createWithAccountKey(account, privateKey);
-        ret = caver.klay.accounts.wallet.add(ret);
-      }
-      let fee;
-      let ret = await contract.methods.deployNFTContract(nftName, symbol, baseURL, maxSupply, caver.utils.toPeb(price.toString(), 'KLAY'), purchaseLimit).estimateGas({from: account})
-      .then(function(gasAmount) {
-        if(gasAmount > 1000000000){
-          alert('Method ran out of gas');
-          fee = -1;
-        }else if(gasAmount > (balance*100000000)){
-          alert("Insufficient fund in your wallet")
-          fee = -1
-        }else {
-          fee = gasAmount*KLAY_FEE_REF;
-        }
-          
-      });
-      if(fee != -1){
-        let tempState = "Name : " + nftName + "\n" +
-                        "Symbol : " + symbol + "\n" +
-                        "Base URL : " + baseURL + "\n" +
-                        "MAX Supply : " + maxSupply + "\n" +
-                        "Price : " + price + "\n" +
-                        "Purchase Limit : " + purchaseLimit + "\n" +
-                        "Gas Fee : " + (fee/100000000) + "\n" +
-                        "Would you deploy the contract?";
-        let tempConfirm = window.confirm(tempState);
-        if(tempConfirm){
-          setLoading(true);
-          let ret = await caver.klay.sendTransaction({
-            type: 'SMART_CONTRACT_EXECUTION',
-            from: account,
-            to: gachaAddress,
-            data: contract.methods.deployNFTContract(nftName, symbol, baseURL, maxSupply, caver.utils.toPeb(price.toString(), 'KLAY'), purchaseLimit).encodeABI(),
-            gas: '10000000'
-          }).then(async (res) => {
-            setLoading(false);
-            let contractInfo = {
-              "owner" : account,
-              "name" : nftName,
-              "symbol" : symbol,
-              "contract" : res.logs[0].address,
-              "baseURL" : baseURL,
-              "maxSupply" : maxSupply,
-              "price" : price,
-              "purchaseLimit" : purchaseLimit
-            }
-            console.log(contractInfo);
-            
-            let ret = await ipcRenderer.send('contractDeployed', {
-              chain: "KLAY",
-              network: network,
-              account : account,
-              contractInfo : contractInfo
-            });
-            setContractAddress(res.logs[0].address);
-            alert("Contract has successfully deployed!");
-
-          })
-          .catch((err) => {alert("Deploy has failed.");});
-        }
-      }
-
   }
+  
+  let contract = gachaContract;
+  let fee;
+  let ret = await contract.methods.deployNFTContract(nftName, symbol, baseURL, maxSupply, finalPrice, purchaseLimit).estimateGas({
+    from: account
+  })
+  .then(function(gasAmount) {
+    console.log(gasAmount);
+    if(gasAmount > 1000000000){
+      alert('Method ran out of gas');
+      fee = -1;
+    }else if(gasAmount > (balance*100000000)){
+      alert("Insufficient fund in your wallet")
+      fee = -1
+    }else {
+      fee = gasAmount*feeRef;
+    }
+      
+  });
+  if(fee != -1){
+    let tempState = "Name : " + nftName + "\n" +
+                    "Symbol : " + symbol + "\n" +
+                    "Base URL : " + baseURL + "\n" +
+                    "MAX Supply : " + maxSupply + "\n" +
+                    "Price : " + price + "\n" +
+                    "Purchase Limit : " + purchaseLimit + "\n" +
+                    "Gas Fee : " + (fee/1000000000) + "\n" +
+                    "Would you deploy the contract?";
+    let tempConfirm = window.confirm(tempState);
+    if(tempConfirm){
+      setLoading(true);
+      ret = await web3Obj.sendTransaction({
+        from: account,
+        to: gachaAddress,
+        data: contract.methods.deployNFTContract(nftName, symbol, baseURL, maxSupply, finalPrice, purchaseLimit).encodeABI(),
+        gas: fee        
+      }).then(async (res)=>{
+        setLoading(false);
+        let contractInfo = {
+          "owner" : account,
+          "name" : nftName,
+          "symbol" : symbol,
+          "contract" : res.logs[0].address,
+          "baseURL" : baseURL,
+          "maxSupply" : maxSupply,
+          "price" : price,
+          "purchaseLimit" : purchaseLimit
+        }
+        
+        let ret = await ipcRenderer.send('contractDeployed', {
+          chain: chain,
+          network: network,
+          account : account,
+          contractInfo : contractInfo
+        });
+        setContractAddress(res.logs[0].address);
+        alert("Contract has successfully deployed!");
+        })
+        .catch((err) => {alert("Deploy has failed.");
+        console.log(err)});  
+      }
+      
+    }
   
   ipcRenderer.send('getContractList', {
     chain: chain,

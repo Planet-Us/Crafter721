@@ -4,7 +4,7 @@ export const urls = {
         testnet:"https://goerli.infura.io/v3/"
     },
     KLAY:{
-        mainnet:"https://api.baobab.klaytn.net:8651",
+        mainnet:"https://public-node-api.klaytnapi.com/v1/cypress",
         testnet:"https://api.baobab.klaytn.net:8651"
     },
     POLY:{
