@@ -102,6 +102,11 @@ ipcMain.on('createWallet', (event, arg) =>{
         walletData.ethPassword = arg.password;
         walletData.infuraCode = arg.infuraCode;
         event.sender.send('getWallet-reply', arg.wallet);
+    }else if(arg.chain == "POLY"){
+        walletData.polyWallet.push(arg.wallet);
+        walletData.polyPassword = arg.password;
+        walletData.infuraCode = arg.infuraCode;
+        event.sender.send('getWallet-reply', arg.wallet);
     }else if(arg.chain == "KLAY"){
         walletData.klayWallet.push(arg.wallet);
         walletData.klayPassword = arg.password
@@ -122,6 +127,9 @@ ipcMain.on('checkWallet', (event, arg) =>{
         if(walletData.ethWallet.length > 0){
             ethWallet = 1;
         }
+        if(walletData.polyWallet.length > 0){
+            polyWallet = 1;
+        }
         if(walletData.klayWallet.length > 0){
             klayWallet = 1;
         }
@@ -129,8 +137,10 @@ ipcMain.on('checkWallet', (event, arg) =>{
     }else{
         const walletEmptyData = {
             "ethWallet": [],
+            "polyWallet": [],
             "klayWallet": [],
             "ethPassword": "",
+            "polyPassword": "",
             "klayPassword": "",
             "infuraCode": ""
         }
@@ -139,6 +149,7 @@ ipcMain.on('checkWallet', (event, arg) =>{
     }
     event.sender.send('checkWallet-reply', {
         "klayWallet" : klayWallet,
+        "polyWallet" : polyWallet,
         "ethWallet" : ethWallet
     });
 
@@ -158,6 +169,16 @@ ipcMain.on('addNewWallet', (event, arg) =>{
         event.sender.send('addWallet-reply', {
             "walletData" : arg.newWallet,
             "password" : walletData.ethPassword,
+            "infuraCode" : walletData.infuraCode
+        });
+    }else if(arg.chain == "POLY"){
+        if(typeof arg.newWallet != undefined){
+            walletData.polyWallet.push(arg.newWallet);
+
+        }
+        event.sender.send('addWallet-reply', {
+            "walletData" : arg.newWallet,
+            "password" : walletData.polyPassword,
             "infuraCode" : walletData.infuraCode
         });
     }else if(arg.chain == "KLAY"){
@@ -182,6 +203,12 @@ ipcMain.on('getWallet', (event, arg) =>{
         event.sender.send('getWallet-reply', {
             "walletData" : walletData.ethWallet,
             "password" : walletData.ethPassword,
+            "infuraCode" : walletData.infuraCode
+        });
+    }else if(arg.chain == "POLY"){
+        event.sender.send('getWallet-reply', {
+            "walletData" : walletData.polyWallet,
+            "password" : walletData.polyPassword,
             "infuraCode" : walletData.infuraCode
         });
     }else if(arg.chain == "KLAY"){
@@ -231,6 +258,38 @@ ipcMain.on('updateContract', (event, arg) =>{
                     }
                 }
                 contractMainnetList.push(contractData.ETH.mainnet[i]);
+            }
+        }
+    }else if(arg.chain == "POLY"){
+        if(arg.network == "mumbai"){
+            for(let i = 0;i<contractData.POLY.mumbai.length;i++){
+                if(contractData.POLY.mumbai[i].contract == arg.contract){
+                    if(arg.update == "maxSupply"){
+                        contractData.POLY.mumbai[i].maxSupply = arg.updateData;
+                    }else if(arg.update == "price"){
+                        contractData.POLY.mumbai[i].price = arg.updateData;
+                    }else if(arg.update == "baseURL"){
+                        contractData.POLY.mumbai[i].baseURL = arg.updateData;
+                    }else if(arg.update == "purchaseLimit"){
+                        contractData.POLY.mumbai[i].purchaseLimit = arg.updateData;
+                    }
+                }
+                contractTestnetList.push(contractData.POLY.mumbai[i]);
+            }
+        }else if(arg.network == "mainnet"){
+            for(let i = 0;i<contractData.POLY.mainnet.length;i++){
+                if(contractData.POLY.mainnet[i].contract == arg.contract){
+                    if(arg.update == "maxSupply"){
+                        contractData.POLY.mainnet[i].maxSupply = arg.updateData;
+                    }else if(arg.update == "price"){
+                        contractData.POLY.mainnet[i].price = arg.updateData;
+                    }else if(arg.update == "baseURL"){
+                        contractData.POLY.mainnet[i].baseURL = arg.updateData;
+                    }else if(arg.update == "purchaseLimit"){
+                        contractData.POLY.mainnet[i].purchaseLimit = arg.updateData;
+                    }
+                }
+                contractMainnetList.push(contractData.POLY.mainnet[i]);
             }
         }
     }else if(arg.chain == "KLAY"){
@@ -286,6 +345,10 @@ ipcMain.on('contractDeployed', async (event, arg) =>{
                 "goerli": [],
                 "mainnet": []
             },
+            "POLY": {
+                "mumbai": [],
+                "mainnet": []
+            },
             "KLAY": {
                 "baobab": [],
                 "mainnet": []
@@ -308,6 +371,17 @@ ipcMain.on('contractDeployed', async (event, arg) =>{
             let contractList = contractData.ETH.mainnet;
             contractList[contractList.length] = arg.contractInfo;
             contractData.ETH.mainnet = contractList;
+        }
+    }else if(arg.chain == "POLY"){
+        if(arg.network == "mumbai"){
+            let contractList = contractData.POLY.mumbai;
+            contractList[contractList.length] = arg.contractInfo;
+            contractData.POLY.mumbai = contractList;
+            console.log("got here");
+        }else if(arg.network == "mainnet"){
+            let contractList = contractData.POLY.mainnet;
+            contractList[contractList.length] = arg.contractInfo;
+            contractData.POLY.mainnet = contractList;
         }
     }else if(arg.chain == "KLAY"){
         if(arg.network == "baobab"){
@@ -336,6 +410,10 @@ ipcMain.on('getContractList', async (event, arg) =>{
                 "goerli": [],
                 "mainnet": []
             },
+            "POLY": {
+                "mumbai": [],
+                "mainnet": []
+            },
             "KLAY": {
                 "baobab": [],
                 "mainnet": []
@@ -362,6 +440,20 @@ ipcMain.on('getContractList', async (event, arg) =>{
             for(let i = 0;i<contractData.ETH.mainnet.length;i++){
                 if(contractData.ETH.mainnet[i].owner == arg.account){
                     contractMainnetList.push(contractData.ETH.mainnet[i]);
+                }
+            }
+        }
+    }else if(arg.chain == "POLY"){
+        if(contractData.POLY){
+            for(let i = 0;i<contractData.POLY.mumbai.length;i++){
+                console.log(contractData.POLY.mumbai[i]);
+                if(contractData.POLY.mumbai[i].owner == arg.account){
+                    contractTestnetList.push(contractData.POLY.mumbai[i]);
+                }
+            }
+            for(let i = 0;i<contractData.POLY.mainnet.length;i++){
+                if(contractData.POLY.mainnet[i].owner == arg.account){
+                    contractMainnetList.push(contractData.POLY.mainnet[i]);
                 }
             }
         }
@@ -541,6 +633,20 @@ ipcMain.on('changeContractList', (event, arg) =>{
             for(let i = 0;i<contractData.ETH.mainnet.length;i++){
                 if(contractData.ETH.mainnet[i].contract == arg.contractData.contract){
                     contractData.ETH.mainnet[i] = arg.contractData;
+                }
+            }
+        }
+    }else if(arg.chain == "POLY"){
+        if(arg.network == "mumbai"){
+            for(let i = 0;i<contractData.POLY.mumbai.length;i++){
+                if(contractData.POLY.mumbai[i].contract == arg.contractData.contract){
+                    contractData.POLY.mumbai[i] = arg.contractData;
+                }
+            }
+        }else if(arg.network == "mainnet"){
+            for(let i = 0;i<contractData.POLY.mainnet.length;i++){
+                if(contractData.POLY.mainnet[i].contract == arg.contractData.contract){
+                    contractData.POLY.mainnet[i] = arg.contractData;
                 }
             }
         }

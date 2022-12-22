@@ -1,25 +1,18 @@
 import react, {Component, useEffect, useState} from 'react';
 import {TextField, Button} from "@mui/material"
-import axios from 'axios';
 import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
-import CardMedia from '@mui/material/CardMedia';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import klaytnFunc from '../klaytnFunc';
 import '../App.css';
-import ethFunc from '../ethFunc';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import '../bootstrap.min.css';
 import { makeStyles } from '@mui/styles';
-import Typography from '@mui/material/Typography';
 const ipcRenderer = window.require('electron').ipcRenderer;
   const useStyles = makeStyles({
     card: {
@@ -47,12 +40,9 @@ const ipcRenderer = window.require('electron').ipcRenderer;
 export default function EtherManage(props) {
     const classes = useStyles();
 
-    const [address, setAddress] = useState("");
     const [contractAddress, setContractAddress] = useState("");
-    const [loading, setLoading] = useState(false);
     const [name, setName] = useState("");
     const [symbol, setSymbol] = useState("");
-    const [jsons, setJsons] = useState([]);
     const [baseURL, setBaseURL] = useState("");
     const [maxSupply, setMaxSupply] = useState(0);
     const [price, setPrice] = useState(0);
@@ -157,6 +147,13 @@ export default function EtherManage(props) {
             }else{
                 tempURL = "https://etherscan.io/address/" + contractAddress;
             }
+        }else if(props.chain == "POLY"){
+            if(props.network == "mumbai"){
+                tempURL = "https://mumbai.polygonscan.com/address/" + contractAddress;
+            }else{
+                tempURL = "https://polygonscan.com/address/" + contractAddress;
+            }
+
         }else if(props.chain == "KLAY"){
             if(props.network == "baobab"){
                 tempURL = "https://baobab.scope.klaytn.com/account/" + contractAddress;
@@ -225,6 +222,9 @@ export default function EtherManage(props) {
                         <Button onClick={handleCopy}>Copy</Button>
                         {props.chain == "ETH" ?
                         <Button onClick={openEtherScan} style={{marginLeft: "10px"}} variant="contained">Ether Scan</Button>
+                        :
+                        props.chain == "POLY" ?
+                        <Button onClick={openEtherScan} style={{marginLeft: "10px"}} variant="contained">Polygon Scan</Button>
                         :
                         <Button onClick={openEtherScan} style={{marginLeft: "10px"}} variant="contained">Klay Scope</Button>
                         }

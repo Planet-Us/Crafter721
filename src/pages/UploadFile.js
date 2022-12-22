@@ -1,21 +1,14 @@
 import react, {Component, useEffect, useState} from 'react';
 import {TextField, Button} from "@mui/material"
-import axios from 'axios';
-import { DataGrid, getDataGridUtilityClass } from '@mui/x-data-grid';
-import CsvDownload from 'react-json-to-csv';
-import Box from '@mui/material/Box';
-import InputLabel from '@mui/material/InputLabel';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import Loading from '../Component/Loading.js';
 import ListItem from '@mui/material/ListItem';
 import List from '@mui/material/List';
 
 import ListItemText from '@mui/material/ListItemText';
 import { makeStyles } from '@mui/styles';
 import { styled } from '@mui/material/styles';
-import CircularProgress from '@mui/material/CircularProgress';
 const ipcRenderer = window.require('electron').ipcRenderer;
 // import '../bootstrap.min.css';
 
@@ -36,7 +29,6 @@ export default function UploadFile(props) {
     const [imageList, setImageList] = useState([]);
     const [imageNameList, setImageNameList] = useState([]);
     const [imageExtension, setImageExtension] = useState("");
-    const [loading, setLoading] = useState(false);
     const [jsonNum, setJsonNum] = useState(0);
     const [imageNum, setImageNum] = useState(0);
     

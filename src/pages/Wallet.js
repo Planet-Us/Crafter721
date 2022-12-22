@@ -55,6 +55,11 @@ export default function Wallet(props) {
             ipcRenderer.send('openFaucet', {
                 url: "https://goerlifaucet.com/"
             });
+        } else if(props.chain == "POLY"){
+            ipcRenderer.send('openFaucet', {
+                url: "https://mumbaifaucet.com/"
+            });
+
         } else if (props.chain == "KLAY") {
             ipcRenderer.send('openFaucet', {
                 url: "https://baobab.wallet.klaytn.foundation/faucet"
@@ -104,6 +109,9 @@ export default function Wallet(props) {
                 <Button onClick={handleImport}>Import</Button><br />
                 {props.chain == "ETH" ?
                     <span style={{ width: "100%", fontSize: "30px" }}>{balance} ETH</span>
+                    :
+                    props.chain == "POLY" ?
+                    <span style={{ width: "100%", fontSize: "30px" }}>{balance} MATIC</span>                    
                     :
                     <span style={{ width: "100%", fontSize: "30px" }}>{balance} KLAY</span>
                 }

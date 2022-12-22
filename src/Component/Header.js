@@ -1,30 +1,19 @@
 import react, {Component, useEffect, useState} from 'react';
-import {TextField, Button} from "@mui/material"
-import axios from 'axios';
-import { DataGrid, getDataGridUtilityClass } from '@mui/x-data-grid';
-import CsvDownload from 'react-json-to-csv';
 import Box from '@mui/material/Box';
 import contractData from '../Contract';
 import Web3 from 'web3';
 import Caver from "caver-js";
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import { makeStyles } from '@mui/styles';
-import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import klaytnFunc from '../klaytnFunc';
-import ethFunc from '../ethFunc';
 import '../bootstrap.min.css';
-import { INSPECT_MAX_BYTES } from 'buffer';
 import Logo from '../Logo.png'
 const ipcRenderer = window.require('electron').ipcRenderer;
 let rpcURL = contractData.mainnetRPCURL;
 let caver = new Caver(rpcURL);
 let web3;
 let walletArray = new Array();
-let newWallet = new String();
 
 
 export default function Header(props) {
@@ -41,10 +30,14 @@ export default function Header(props) {
         console.log(walletTmp);
         if(props.password.length >0){
             if(props.chain == "ETH"){
-                web3 = new Web3('https://goerli.infura.io/v3/' + props.infuraCode);
+                web3 = new Web3('https://mainnet.infura.io/v3/' + props.infuraCode);
+                decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData, props.password);
+            }else if(props.chain == "POLY"){
+                web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + props.infuraCode);
                 decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData, props.password);
             }else if(props.chain == "KLAY"){
-                web3 = new Web3('https://mainnet.infura.io/v3/' + props.infuraCode);
+                rpcURL = contractData.baobabRPCURL;
+                caver = new Caver(rpcURL);
                 decryptedWallet = await caver.klay.accounts.decrypt(walletTmp.walletData, props.password);
             }
             walletArray.push({
@@ -123,6 +116,31 @@ export default function Header(props) {
                             >
                                 <MenuItem value={"mainnet"}>Mainnet</MenuItem>
                                 <MenuItem value={"goerli"}>Goerli</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
+                    :
+                    props.chain == "POLY" ?
+                    
+                    <Box sx={{ maxWidth: "20%", width: "20%", color: "white"}}>
+                        <FormControl fullWidth sx={{color: "white" }}>
+                            {/* <InputLabel id="demo-simple-select-label">Chain</InputLabel> */}
+                            <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={network}
+                            label="Network"
+                            onChange={networkChange}
+                            className={classes.select}
+                            inputProps={{
+                                classes: {
+                                    icon: classes.icon,
+                                },
+                            }}
+                            sx={{ backgroundColor: 'transparent', color: "white" }}
+                            >
+                                <MenuItem value={"mainnet"}>Mainnet</MenuItem>
+                                <MenuItem value={"mumbai"}>Mumbai</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>

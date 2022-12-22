@@ -6,25 +6,17 @@ import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
 import contractData from '../Contract';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
-import CardMedia from '@mui/material/CardMedia';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Grid from '@mui/material/Grid';
 import '../App.css';
-import ListItem from '@mui/material/ListItem';
-import List from '@mui/material/List';
 import { styled } from '@mui/material/styles';
 import Web3 from 'web3';
 import Caver from "caver-js";
 
-import ListItemText from '@mui/material/ListItemText';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
 import '../bootstrap.min.css';
 import { makeStyles } from '@mui/styles';
-import Typography from '@mui/material/Typography';
 const ipcRenderer = window.require('electron').ipcRenderer;
 const HtmlTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -67,10 +59,8 @@ const HtmlTooltip = styled(({ className, ...props }) => (
 export default function ManageNFT(props) {
     const classes = useStyles();
 
-    const [address, setAddress] = useState("");
     const [contractAddress, setContractAddress] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [name, setName] = useState("");
+    const [name, setName] = useState("");//props에서 넘어오는 contractListMain 값들로 다 대체하고 있으니 지워야 할듯
     const [nftname, setnftName] = useState("");
     const [jsons, setJsons] = useState([]);
     const [baseURL, setBaseURL] = useState("");
@@ -189,13 +179,23 @@ const getOwnTokenList = async (contractAddress) =>{
     let tokenList = new Array();
     let web3;
     let caver;
-    if(props.chain == "ETH"){
-      if(props.network == "goerli"){
-        web3 = await new Web3('https://goerli.infura.io/v3/' + props.infuraCode);
-        contract = await new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-      }else if(props.network == "mainnet"){
-          web3 = new Web3('https://mainnet.infura.io/v3/' + props.infuraCode);
-          contract = await new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+    if(props.chain == "ETH" || props.chain == "POLY"){
+      if(props.chain == "ETH"){
+        if(props.network == "goerli"){
+          web3 = await new Web3('https://goerli.infura.io/v3/' + props.infuraCode);
+          contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+        }else if(props.network == "mainnet"){
+            web3 = new Web3('https://mainnet.infura.io/v3/' + props.infuraCode);
+            contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+        }
+      }else if(props.chain == "POLY"){
+        if(props.network == "mumbai"){
+            web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + props.infuraCode);
+            contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
+        }else if(props.network == "mainnet"){
+            web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + props.infuraCode);
+            contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
+        }
       }
       let ret = await web3.eth.accounts.wallet.add(props.privateKey);
       entryNum = await contract.methods.totalSupply().call(); 

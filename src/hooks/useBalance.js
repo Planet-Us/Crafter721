@@ -1,18 +1,18 @@
 
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
-import { useChain } from "./useChain";
+import { useCrafterStore } from "./useCrafterStore";
 import { useWeb3 } from "./useWeb3";
 
 export function useBalance(address) {
     const web3 = useWeb3()
-    const chain = useChain();
+    const category = useCrafterStore(state => state.category);
 
     const [balance, setBalance] = useState("Loading...");
 
     const refreshBalance = () => {
         if (address) {
-            Promise.all([web3[chain.toLowerCase()].getBalance(address)]).then((values) => {
+            Promise.all([web3[category.toLowerCase()].getBalance(address)]).then((values) => {
                 setBalance(ethers.utils.formatEther(values[0]));
             });
         }
@@ -21,7 +21,8 @@ export function useBalance(address) {
 
     useEffect(() => {
         if (address) {
-            Promise.all([web3[chain.toLowerCase()].getBalance(address)]).then((values) => {
+            console.log([web3[category.toLowerCase()].getBalance(address)]);
+            Promise.all([web3[category.toLowerCase()].getBalance(address)]).then((values) => {
                 setBalance(ethers.utils.formatEther(values[0]));
             });
         }

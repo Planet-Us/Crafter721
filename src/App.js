@@ -45,13 +45,24 @@ if(chain === "ETH"){
 
   const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
   const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
+  const category = "eth";
 
-  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
+  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, category: category});
 } else if(chain == "KLAY"){
   const mainnetWeb3 = new Caver(`${contractData.klayMainnetRPCURL}`);
   const testnetWeb3 = new Caver(`${contractData.klayTestnetRPCURL}`);
   console.log(mainnetWeb3);
-  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3});
+  const category = "klay";
+
+  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, category: category});
+}else if(chain == "POLY"){
+  const infuraCode = electronStore.get("infuraCode");
+  const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
+  const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
+  console.log(mainnetWeb3);
+  const category = "eth";
+
+  useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, category: category});
 }
 
 }
@@ -78,6 +89,7 @@ function App() {
   const [balance , refreshBalance] = useBalance(account);
   const setStoreChain = useCrafterStore(state => state.setChain);
   const setStoreNetwork = useCrafterStore(state => state.setNetwork);
+  const setCategory = useCrafterStore(state => state.setCategory);
   const dataId = useRef(0);
   const contractFlag = [contractListMain, contractListTest];
   const Layout = styled.div`
@@ -140,7 +152,7 @@ useEffect(() => {
       setLoading(true);
       let walletArray = new Array();
       if(password.length >0){
-        if(chain == "ETH"){
+        if(chain == "ETH" || chain == "POLY"){
           setInfuraCode(walletTmp.infuraCode);
           // 처음 create wallet 할때 infura code 를 스토어에 저장함 ,
           // electronStore.set('infuraCode',walletTmp.infuraCode);
@@ -218,7 +230,7 @@ useEffect(() => {
       let decryptedWallet;
       // console.log(walletTmp);
       if(password.length >0){
-        if(chain == "ETH"){
+        if(chain == "ETH" || chain == "POLY"){
             decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData, password);
         }else if(chain == "KLAY"){
             decryptedWallet = await caver.klay.accounts.decrypt(walletTmp.walletData, password);
@@ -281,18 +293,36 @@ useEffect(() => {
         caver = new Caver(rpcURL);
         contract = caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
       }
+    }else if(chain == "POLY"){
+      if(network == "mumbai"){
+          web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
+          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressMumbai);
+      }else if(network == "mainnet"){
+          web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
+          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressPoly);
+      }
     }
   }, [network]);
   
   const updateContract = async (contractAddress,updateCategory,updateData) =>{
     let nftContract;
-    if(chain == "ETH"){
-      if(network == "goerli"){
-        web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
-        nftContract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-      }else if(network == "mainnet"){
-          web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+    if(chain == "ETH" || chain == "POLY"){
+      if(chain == "ETH"){
+        if(network == "goerli"){
+          web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
           nftContract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+        }else if(network == "mainnet"){
+            web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+            nftContract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+        }
+      }else if(chain == "POLY"){
+        if(network == "mumbai"){
+            web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
+            nftContract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
+        }else if(network == "mainnet"){
+            web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
+            nftContract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
+        }
       }
       let ret = await web3.eth.accounts.wallet.add(privateKey);
       let fee;
@@ -495,7 +525,7 @@ useEffect(() => {
     let ret;
     let newWalletEncrypt;
     // console.log(chain);
-    if(chain == "ETH"){
+    if(chain == "ETH" || chain == "POLY"){
       newWallet = await web3.eth.accounts.wallet.create(1);
       ret = await web3.eth.accounts.wallet.add(newWallet[0].privateKey);
       newWalletEncrypt = await web3.eth.accounts.wallet.encrypt(password);
@@ -526,7 +556,7 @@ useEffect(() => {
     let ret;
     let newWalletEncrypt;
     console.log(newPrivateKey.length);
-      if(chain == "ETH"){
+      if(chain == "ETH" || chain == "POLY"){
         try{
           ret = await web3.eth.accounts.wallet.add(newPrivateKey);
 
@@ -563,13 +593,29 @@ useEffect(() => {
   }
   const deploySmartContract = async (nftName, symbol, baseURL, maxSupply, price, whiteList, purchaseLimit) =>{
     console.log(baseURL);
-    if(chain == "ETH"){
-      if(network == "goerli"){
-        web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
-        contract = await new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
-      }else if(network == "mainnet"){
-          web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
+    let gachaAddress;
+    if(chain == "ETH" || chain == "POLY"){
+      if(chain == "ETH"){
+        if(network == "goerli"){
+          web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
+          contract = await new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
+          gachaAddress = contractData.gachaAddressRinkeby;
+        }else if(network == "mainnet"){
+            web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+            contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
+            gachaAddress = contractData.gachaAddressEth;
+        }
+      }else 
+      if(chain == "POLY"){
+        if(network == "mumbai"){
+          web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
+          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressMumbai);
+          gachaAddress = contractData.gachaAddressMumbai;
+        }else if(network == "mainnet"){
+          web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
+          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressPoly);
+          gachaAddress = contractData.gachaAddressPoly;
+        }
       }
       let ret = await web3.eth.accounts.wallet.add(privateKey);
       let fee;
@@ -604,7 +650,7 @@ useEffect(() => {
           setLoading(true);
           ret = await web3.eth.sendTransaction({
             from: account,
-            to: contractData.gachaAddressRinkeby,
+            to: gachaAddress,
             data: contract.methods.deployNFTContract(nftName, symbol, baseURL, maxSupply, web3.utils.toWei(price.toString(), 'ether'), purchaseLimit).encodeABI(),
             gas: fee        
           }).then(async (res)=>{
@@ -621,7 +667,7 @@ useEffect(() => {
             }
             
             let ret = await ipcRenderer.send('contractDeployed', {
-              chain: "ETH",
+              chain: chain,
               network: network,
               account : account,
               contractInfo : contractInfo
@@ -721,7 +767,7 @@ useEffect(() => {
 
   
   const transferEth = async (from, to, amount) =>{
-      if(chain == "ETH"){
+      if(chain == "ETH" || chain == "POLY"){
         let ret = await web3.eth.estimateGas({
           from: account,
           to: to,
@@ -729,7 +775,7 @@ useEffect(() => {
         }).then(async (res) =>{
           let ret = await web3.eth.accounts.wallet.add(privateKey);
           let gasfee = parseInt(res)/1000000000;
-          let tempState = "Amount : " + amount + " " + chain + "\n To : " + to + "\nGas Fee : " + gasfee + " ETH.\n Send it?";
+          let tempState = "Amount : " + amount + " " + chain + "\n To : " + to + "\nGas Fee : " + gasfee + " " + chain + ".\n Send it?";
           let confirmTrans = window.confirm(tempState);
           if(confirmTrans == true){
             setLoading(true);
@@ -787,13 +833,23 @@ useEffect(() => {
 
 const transferNFT = async (contractAddress, tokenList, addressList) => {
   let entryNum;
-  if(chain == "ETH"){
-    if(network == "goerli"){
-      web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
-      contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-    }else if(network == "mainnet"){
-        web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+  if(chain == "ETH" || chain == "POLY"){
+    if(chain == "ETH"){
+      if(network == "goerli"){
+        web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
         contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+      }else if(network == "mainnet"){
+          web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+          contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+      }
+    }else if(chain == "POLY"){
+      if(network == "mumbai"){
+          web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
+          contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
+      }else if(network == "mainnet"){
+          web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
+          contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
+      }
     }
     let ret = await web3.eth.accounts.wallet.add(privateKey);
     let fee;
@@ -888,13 +944,23 @@ const transferNFT = async (contractAddress, tokenList, addressList) => {
 const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수수료 alert 넣고, 실패시 메시지 띄우고 로딩 없애기
   let entryNum;
   let flag = 0;
-  if(chain == "ETH"){
-    if(network == "goerli"){
-      web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
-      contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-    }else if(network == "mainnet"){
-        web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+  if(chain == "ETH" || chain == "POLY"){
+    if(chain == "ETH"){
+      if(network == "goerli"){
+        web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
         contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+      }else if(network == "mainnet"){
+          web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
+          contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+      }
+    }else if(chain == "POLY"){
+      if(network == "mumbai"){
+          web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
+          contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
+      }else if(network == "mainnet"){
+          web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
+          contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
+      }
     }
     let ret = await web3.eth.accounts.wallet.add(privateKey);
     let fee;
@@ -1022,7 +1088,7 @@ const createWallet = async (password, infuraCodeArg) =>{
   electronStore.set('infuraCode', infuraCodeArg);
   let ret;
   let walletTmp;
-  if(chain == "ETH"){
+  if(chain == "ETH" || chain == "POLY"){
     ret = await web3.eth.accounts.create();
     if(ret){
         walletTmp = await web3.eth.accounts.encrypt(ret.privateKey,password);
