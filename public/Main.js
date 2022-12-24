@@ -30,10 +30,10 @@ function createWindow() {
             nodeIntegrationInWorker: true // <---  for web workers
         }
     });
-    // console.log(process.env.NODE_ENV + " mode");
-    // if(process.env.NODE_ENV.toString() != "dev"){
-    //     win.setMenu(null);
-    // }
+    console.log(process.env.NODE_ENV + " mode");
+    if(process.env.NODE_ENV.toString() != "dev"){
+        win.setMenu(null);
+    }
     const isWindows = process.platform === 'win32';
   let needsFocusFix = false;
   let triggeringProgrammaticBlur = false;
@@ -105,7 +105,7 @@ ipcMain.on('createWallet', (event, arg) =>{
     }else if(arg.chain == "POLY"){
         walletData.polyWallet.push(arg.wallet);
         walletData.polyPassword = arg.password;
-        walletData.infuraCode = arg.infuraCode;
+        walletData.polyInfuraCode = arg.infuraCode;
         event.sender.send('getWallet-reply', arg.wallet);
     }else if(arg.chain == "KLAY"){
         walletData.klayWallet.push(arg.wallet);
@@ -120,6 +120,7 @@ ipcMain.on('createWallet', (event, arg) =>{
 ipcMain.on('checkWallet', (event, arg) =>{
     let ethWallet = 0;
     let klayWallet = 0;
+    let polyWallet = 0;
     if(fs.existsSync( './wallet.json' )){
         const walletBuffer = fs.readFileSync('./wallet.json');
         const walletJson = walletBuffer.toString();
