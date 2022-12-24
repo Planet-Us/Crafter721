@@ -174,70 +174,58 @@ useEffect(() => {
     ipcRenderer.on('getWallet-reply', async (event, walletTmp) => { 
       setLoading(true);
       let walletArray = new Array();
+      let web3Obj;
       if(password.length >0){
         if(chain == "ETH" || chain == "POLY"){
+          web3Obj = web3.eth;
           setInfuraCode(walletTmp.infuraCode);
-          // 처음 create wallet 할때 infura code 를 스토어에 저장함 ,
-          // electronStore.set('infuraCode',walletTmp.infuraCode);
-          // infura code 를 받아오는 여기서 init
-          // Init(chain,network,walletTmp.infuraCode);
-          if(password == walletTmp.password){
-            for(let i = 0;i<walletTmp.walletData.length;i++){
-              // console.log(walletTmp.walletData[i]);
-              let decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData[i], password);
-              walletArray.push(decryptedWallet);
-              web3.eth.accounts.wallet.add(decryptedWallet.privateKey);
-            }
-            allWalletData = walletArray;
-            setWalletList(walletArray);
-            changeNetwork(network);
-            setAccount(walletArray[0].address.toString());
-            setPrivateKey(walletArray[0].privateKey);
-            setAccountObj(walletArray[0]);
-            
-            ipcRenderer.send('getContractList', {
-              chain: chain,
-              account : walletArray[0].address,
-              network : network
-            });
-          }else{
-            setLoading(false);
-            alert("Wrong Password!");
-          }
         }else if(chain == "KLAY"){
-          // Init(chain,network,walletTmp.infuraCode);
-          
-          if(password == walletTmp.password){
-            // console.log(walletTmp.walletData);
-            if(typeof walletTmp.walletData.length != "undefined"){
-              for(let i = 0;i<walletTmp.walletData.length;i++){
-                let decryptedWallet = await caver.klay.accounts.decrypt(walletTmp.walletData[i], password);
-                walletArray.push(decryptedWallet);
-                let ret = await caver.klay.accounts.createWithAccountKey(decryptedWallet.address, decryptedWallet.privateKey);
-                ret = caver.klay.accounts.wallet.add(ret);
-              }
-            }else{
-              let decryptedWallet = await caver.klay.accounts.decrypt(walletTmp.walletData, password);
+          web3Obj = web3.klay;
+        }
+        let ret;
+        let klayCreatedAccount;
+        if(password == walletTmp.password){
+          console.log(walletTmp);
+          if(typeof walletTmp.walletData.length != "undefined"){
+            for(let i = 0;i<walletTmp.walletData.length;i++){
+              let decryptedWallet = await web3Obj.accounts.decrypt(walletTmp.walletData[i], password);
               walletArray.push(decryptedWallet);
-              let ret = await caver.klay.accounts.createWithAccountKey(decryptedWallet.address, decryptedWallet.privateKey);
-              ret = caver.klay.accounts.wallet.add(ret);
+              if(chain == "KLAY"){
+                klayCreatedAccount = await web3Obj.accounts.createWithAccountKey(decryptedWallet.address, decryptedWallet.privateKey);
+                ret = web3Obj.accounts.wallet.add(klayCreatedAccount);
+
+              }else{
+                ret = web3Obj.accounts.wallet.add(decryptedWallet.privateKey);
+
+              }
             }
-            allWalletData = walletArray;
-            setWalletList(walletArray);
-            changeNetwork(network);
-            setAccount(walletArray[0].address.toString());
-            setPrivateKey(walletArray[0].privateKey);
-            setAccountObj(walletArray[0]);
-            
-            ipcRenderer.send('getContractList', {
-              chain: chain,
-              account : walletArray[0].address,
-              network : network
-            });
           }else{
-            setLoading(false);
-            alert("Wrong Password!");
+            let decryptedWallet = await web3Obj.accounts.decrypt(walletTmp.walletData, password);
+            walletArray.push(decryptedWallet);
+            if(chain == "KLAY"){
+              klayCreatedAccount = await web3Obj.accounts.createWithAccountKey(decryptedWallet.address, decryptedWallet.privateKey);
+              ret = web3Obj.accounts.wallet.add(klayCreatedAccount);
+
+            }else{
+              ret = web3Obj.accounts.wallet.add(decryptedWallet.privateKey);
+
+            }
           }
+          allWalletData = walletArray;
+          setWalletList(walletArray);
+          changeNetwork(network);
+          setAccount(walletArray[0].address.toString());
+          setPrivateKey(walletArray[0].privateKey);
+          setAccountObj(walletArray[0]);
+          
+          ipcRenderer.send('getContractList', {
+            chain: chain,
+            account : walletArray[0].address,
+            network : network
+          });
+        }else{
+          setLoading(false);
+          alert("Wrong Password!");
         }
       }
     });
@@ -298,239 +286,114 @@ useEffect(() => {
     getDataWithAddress(addressState);
   }
 
-// 다 제거가능 , klay rpc URL??
-// contract 변수의 이름을 gachaContract 로 바꿀것, 
-  useEffect (() =>{ 
-    if(chain == "ETH"){
-      if(network == "goerli"){
-          web3 = new Web3('https://goerli.infura.io/v3/' + infuraCode);
-          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
-      }else if(network == "mainnet"){
-          web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
-      }
-    }else if(chain == "KLAY"){
-      if(network == "baobab"){
-        rpcURL = contractData.klayTestnetRPCURL;
-        caver = new Caver(rpcURL);
-        contract = caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressbaobab);
-      }else if(network == "mainnet"){
-        rpcURL = contractData.klayMainnetRPCURL;
-        caver = new Caver(rpcURL);
-        contract = caver.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
-      }
-    }else if(chain == "POLY"){
-      if(network == "mumbai"){
-          web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
-          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressMumbai);
-      }else if(network == "mainnet"){
-          web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
-          contract = new web3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressPoly);
-      }
-    }
-  }, [network]);
-  
   const updateContract = async (contractAddress,updateCategory,updateData) =>{
     let nftContract;
+    let web3Obj;
+    let feeRef;
+    let signObj;
     if(chain == "ETH" || chain == "POLY"){
-      if(chain == "ETH"){
-        if(network == "goerli"){
-          web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
-          nftContract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-        }else if(network == "mainnet"){
-            web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-            nftContract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-        }
-      }else if(chain == "POLY"){
-        if(network == "mumbai"){
-            web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
-            nftContract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
-        }else if(network == "mainnet"){
-            web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
-            nftContract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
-        }
-      }
-      let ret = await web3.eth.accounts.wallet.add(privateKey);
-      let fee;
-      let data;
-      if(updateCategory == "maxSupply"){
-        data = nftContract.methods.setMaxNum(updateData).encodeABI();
-        ret = await nftContract.methods.setMaxNum(updateData).estimateGas({from: account})
-        .then(function(gasAmount) {
-          if(gasAmount > 1000000000){
-            alert('Method ran out of gas');
-            fee = -1;
-          }else if(gasAmount > (balance*100000000)){
-            alert("Insufficient fund in your wallet")
-            fee = -1
-          }else {
-            fee = gasAmount*ETH_FEE_REF;
-          }
-        });
-      }else if(updateCategory == "price"){
-        data = nftContract.methods.setPrice(updateData).encodeABI();
-        ret = await nftContract.methods.setPrice(updateData).estimateGas({from: account})
-        .then(function(gasAmount) {
-          if(gasAmount > 1000000000){
-            alert('Method ran out of gas');
-            fee = -1;
-          }else if(gasAmount > (balance*100000000)){
-            alert("Insufficient fund in your wallet")
-            fee = -1
-          }else {
-            fee = gasAmount*ETH_FEE_REF;
-          }
-        });
-      }else if(updateCategory == "baseURL"){
-        data = nftContract.methods.setTokenUri(updateData).encodeABI();
-        ret = await nftContract.methods.setTokenUri(updateData).estimateGas({from: account})
-        .then(function(gasAmount) {
-          if(gasAmount > 1000000000){
-            alert('Method ran out of gas');
-            fee = -1;
-          }else if(gasAmount > (balance*100000000)){
-            alert("Insufficient fund in your wallet")
-            fee = -1
-          }else {
-            fee = gasAmount*ETH_FEE_REF;
-          }
-        });
-      }else if(updateCategory == "purchaseLimit"){
-        data = nftContract.methods.setPurchaseLimit(updateData).encodeABI();
-        ret = await nftContract.methods.setPurchaseLimit(updateData).estimateGas({from: account})
-        .then(function(gasAmount) {
-          if(gasAmount > 1000000000){
-            alert('Method ran out of gas');
-            fee = -1;
-          }else if(gasAmount > (balance*100000000)){
-            alert("Insufficient fund in your wallet")
-            fee = -1
-          }else {
-            fee = gasAmount*ETH_FEE_REF;
-          }
-        });
-      }
-      let tempState = updateCategory + " : " + updateData + "\n" +
-                      "Gas Fee : " + (fee/1000000000) + "\n" +
-                      "Would you update Max Supply?";
-      let tempConfirm = window.confirm(tempState);
-      if(fee != -1 && tempConfirm){
-          setLoading(true);
-          ret = await web3.eth.sendTransaction({
-            from: account,
-            to: contractAddress,
-            data: data,
-            gas: fee
-          }).then(async (res) => {
-            setLoading(false);
-            ipcRenderer.send('updateContract', {
-              update: updateCategory,
-              chain: chain,
-              network: network,
-              contract: contractAddress,
-              updateData: updateData
-            });
-            alert(updateCategory + " has successfully updated!");
-          });
+      web3Obj = web3.eth;
+      nftContract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+      feeRef = ETH_FEE_REF;
+      signObj = {
+        from: account,
+        to: contractAddress,
+        data: "",
+        gas: ""
       }
     }else if(chain == "KLAY"){
-      if(network == "baobab"){
-        rpcURL = contractData.klayTestnetRPCURL;
-        caver = new Caver(rpcURL);
-        nftContract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
-      }else if(network == "mainnet"){
-        rpcURL = contractData.klayMainnetRPCURL;
-        caver = new Caver(rpcURL);
-        nftContract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
-      }
-      if(caver.klay.accounts.wallet.length == 0){
-        let ret = await caver.klay.accounts.createWithAccountKey(account, privateKey);
-        ret = caver.klay.accounts.wallet.add(ret);
-      }
-      let fee;
-      let data;
-      if(updateCategory == "maxSupply"){
-        data = nftContract.methods.setMaxNum(updateData).encodeABI();
-        let ret = await nftContract.methods.setMaxNum(updateData).estimateGas({from: account})
-        .then(function(gasAmount) {
-          if(gasAmount > 1000000000){
-            alert('Method ran out of gas');
-            fee = -1;
-          }else if(gasAmount > (balance*100000000)){
-            alert("Insufficient fund in your wallet")
-            fee = -1
-          }else {
-            fee = gasAmount*KLAY_FEE_REF;
-          }
-        });
-      }else if(updateCategory == "price"){
-        data = nftContract.methods.setPrice(updateData).encodeABI();
-        let ret = await nftContract.methods.setPrice(updateData).estimateGas({from: account})
-        .then(function(gasAmount) {
-          if(gasAmount > 1000000000){
-            alert('Method ran out of gas');
-            fee = -1;
-          }else if(gasAmount > (balance*100000000)){
-            alert("Insufficient fund in your wallet")
-            fee = -1
-          }else {
-            fee = gasAmount*KLAY_FEE_REF;
-          }
-        });
-      }else if(updateCategory == "baseURL"){
-        data = nftContract.methods.setTokenUri(updateData).encodeABI();
-        let ret = await nftContract.methods.setTokenUri(updateData).estimateGas({from: account})
-        .then(function(gasAmount) {
-          if(gasAmount > 1000000000){
-            alert('Method ran out of gas');
-            fee = -1;
-          }else if(gasAmount > (balance*100000000)){
-            alert("Insufficient fund in your wallet")
-            fee = -1
-          }else {
-            fee = gasAmount*KLAY_FEE_REF;
-          }
-        });
-      }else if(updateCategory == "purchaseLimit"){
-        data = nftContract.methods.setPurchaseLimit(updateData).encodeABI();
-        let ret = await nftContract.methods.setPurchaseLimit(updateData).estimateGas({from: account})
-        .then(function(gasAmount) {
-          if(gasAmount > 1000000000){
-            alert('Method ran out of gas');
-            fee = -1;
-          }else if(gasAmount > (balance*100000000)){
-            alert("Insufficient fund in your wallet")
-            fee = -1
-          }else {
-            fee = gasAmount*KLAY_FEE_REF;
-          }
-        });
-      }
-      let tempState = updateCategory + " : " + updateData + "\n" +
-                      "Gas Fee : " + (fee/1000000000) + "\n" +
-                      "Would you update Max Supply?";
-      let tempConfirm = window.confirm(tempState);
-      if(fee != -1 && tempConfirm){
-        setLoading(true);
-        let ret = await caver.klay.sendTransaction({
-          type: 'SMART_CONTRACT_EXECUTION',
-          from: account,
-          to: contractAddress,
-          data: data,
-          gas: '10000000'
-        }).then(async (res) => {
-          setLoading(false);
-          ipcRenderer.send('updateContract', {
-            update: updateCategory,
-            chain: chain,
-            network: network,
-            contract: contractAddress,
-            updateData: updateData
-          });
-          alert(updateCategory + " has successfully updated!");
-        });
+      web3Obj = web3.klay;
+      nftContract = await web3.contract.create(contractData.klayNFTABI,contractAddress);
+      feeRef = KLAY_FEE_REF;
+      signObj = {
+        type: 'SMART_CONTRACT_EXECUTION',
+        from: account,
+        to: contractAddress,
+        data: "",
+        gas: ""
       }
   
+    }
+    
+    let fee;
+    let data;
+    if(updateCategory == "maxSupply"){
+      data = nftContract.methods.setMaxNum(updateData).encodeABI();
+      let ret = await nftContract.methods.setMaxNum(updateData).estimateGas({from: account})
+      .then(function(gasAmount) {
+        if(gasAmount > 1000000000){
+          alert('Method ran out of gas');
+          fee = -1;
+        }else if(gasAmount > (balance*100000000)){
+          alert("Insufficient fund in your wallet")
+          fee = -1
+        }else {
+          fee = (gasAmount*feeRef).toString();
+        }
+      });
+    }else if(updateCategory == "price"){
+      data = nftContract.methods.setPrice(updateData).encodeABI();
+      let ret = await nftContract.methods.setPrice(updateData).estimateGas({from: account})
+      .then(function(gasAmount) {
+        if(gasAmount > 1000000000){
+          alert('Method ran out of gas');
+          fee = -1;
+        }else if(gasAmount > (balance*100000000)){
+          alert("Insufficient fund in your wallet")
+          fee = -1
+        }else {
+          fee = (gasAmount*feeRef).toString();
+        }
+      });
+    }else if(updateCategory == "baseURL"){
+      data = nftContract.methods.setTokenUri(updateData).encodeABI();
+      let ret = await nftContract.methods.setTokenUri(updateData).estimateGas({from: account})
+      .then(function(gasAmount) {
+        if(gasAmount > 1000000000){
+          alert('Method ran out of gas');
+          fee = -1;
+        }else if(gasAmount > (balance*100000000)){
+          alert("Insufficient fund in your wallet")
+          fee = -1
+        }else {
+          fee = (gasAmount*feeRef).toString();
+        }
+      });
+    }else if(updateCategory == "purchaseLimit"){
+      data = nftContract.methods.setPurchaseLimit(updateData).encodeABI();
+      let ret = await nftContract.methods.setPurchaseLimit(updateData).estimateGas({from: account})
+      .then(function(gasAmount) {
+        if(gasAmount > 1000000000){
+          alert('Method ran out of gas');
+          fee = -1;
+        }else if(gasAmount > (balance*100000000)){
+          alert("Insufficient fund in your wallet")
+          fee = -1
+        }else {
+          fee = (gasAmount*feeRef).toString();
+        }
+      });
+    }
+    let tempState = updateCategory + " : " + updateData + "\n" +
+                    "Gas Fee : " + (fee/1000000000) + "\n" +
+                    "Would you update?";
+    let tempConfirm = window.confirm(tempState);
+    signObj.data = data;
+    signObj.gas = fee;
+    console.log(signObj);
+    if(fee != -1 && tempConfirm){
+      setLoading(true);
+      let ret = await web3Obj.sendTransaction(signObj).then(async (res) => {
+        setLoading(false);
+        ipcRenderer.send('updateContract', {
+          update: updateCategory,
+          chain: chain,
+          network: network,
+          contract: contractAddress,
+          updateData: updateData
+        });
+        alert(updateCategory + " has successfully updated!");
+      });
     }
   
 
@@ -592,6 +455,7 @@ useEffect(() => {
             console.error(e); 
         }
         newWalletEncrypt = await web3.eth.accounts.wallet.encrypt(password);
+        console.log(newWalletEncrypt);
       
         ipcRenderer.send('addNewWallet', {
           chain: chain,
@@ -635,7 +499,7 @@ useEffect(() => {
         let ret = await web3Obj.accounts.createWithAccountKey(account, privateKey);
         ret = web3Obj.accounts.wallet.add(ret);
       }
-  }
+    }
   
   let contract = gachaContract;
   let fee;
@@ -665,6 +529,7 @@ useEffect(() => {
                     "Gas Fee : " + (fee/1000000000) + "\n" +
                     "Would you deploy the contract?";
     let tempConfirm = window.confirm(tempState);
+    console.log(web3Obj);
     if(tempConfirm){
       setLoading(true);
       ret = await web3Obj.sendTransaction({
@@ -715,7 +580,7 @@ useEffect(() => {
           to: to,
           value: web3.utils.toWei(amount, 'ether')
         }).then(async (res) =>{
-          let ret = await web3.eth.accounts.wallet.add(privateKey);
+          // let ret = await web3.eth.accounts.wallet.add(privateKey);
           let gasfee = parseInt(res)/1000000000;
           let tempState = "Amount : " + amount + " " + chain + "\n To : " + to + "\nGas Fee : " + gasfee + " " + chain + ".\n Send it?";
           let confirmTrans = window.confirm(tempState);
@@ -743,8 +608,8 @@ useEffect(() => {
           to: to,
           value: caver.utils.toPeb(amount, 'KLAY')
         }).then(async (res) =>{
-          let ret = await caver.klay.accounts.createWithAccountKey(account, privateKey);
-          ret = caver.klay.accounts.wallet.add(ret);
+          // let ret = await caver.klay.accounts.createWithAccountKey(account, privateKey);
+          // ret = caver.klay.accounts.wallet.add(ret);
           let gasfee = parseInt(res)/1000000000;
           let tempState = "Amount : " + amount + " " + chain + "\n To : " + to + "\nGas Fee : " + gasfee + " Klay.\n Send it?";
           let confirmTrans = window.confirm(tempState);
@@ -775,110 +640,51 @@ useEffect(() => {
 
 const transferNFT = async (contractAddress, tokenList, addressList) => {
   let entryNum;
+  let web3Obj;
+  let feeRef;
   if(chain == "ETH" || chain == "POLY"){
-    if(chain == "ETH"){
-      if(network == "goerli"){
-        web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
-        contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-      }else if(network == "mainnet"){
-          web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-          contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-      }
-    }else if(chain == "POLY"){
-      if(network == "mumbai"){
-          web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
-          contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
-      }else if(network == "mainnet"){
-          web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
-          contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
-      }
-    }
-    let ret = await web3.eth.accounts.wallet.add(privateKey);
-    let fee;
-    let tempAddressList = new Array();
-    for(let i = 0;i<addressList.length;i++){
-        tempAddressList.push(caver.utils.toChecksumAddress(addressList[i]));
-    }
-    console.log(contractAddress, tokenList, addressList);
-    ret = await contract.methods.multiTransfer(tempAddressList, tokenList,tokenList.length).estimateGas({from: account})
-    .then(function(gasAmount) {
-      if(gasAmount > 1000000000){
-        alert('Method ran out of gas');
-        fee = -1;
-      }else if(gasAmount > (balance*100000000)){
-        alert("Insufficient fund in your wallet")
-        fee = -1
-      }else {
-        fee = gasAmount*ETH_FEE_REF;
-      }
-        
-    });
-    let gasfee = parseInt(fee)/100000000;
-    let tempState = "From " + tokenList[0] + " To " + tokenList[tokenList.length-1] + " Total " + tokenList.length + "NFTs will be sent.\n" + gasfee + " ETH.\n Send it?";
-    let confirmTrans = window.confirm(tempState);
-    if(confirmTrans == true){
-      setLoading(true);
-      ret = await web3.eth.sendTransaction({
-        from: account,
-        to: contractAddress,
-        data: contract.methods.multiTransfer(tempAddressList,tokenList,tokenList.length).encodeABI(),
-        gas: '10000000'
-      }).then(async (res) => {
-        setLoading(false);
-        alert("Transfering Successfully done!");
-
-      });
-    }
+    web3Obj = web3.eth;
+    contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
+    feeRef = ETH_FEE_REF;
   }else if(chain == "KLAY"){
-    if(network == "baobab"){
-      rpcURL = contractData.klayTestnetRPCURL;
-      caver = new Caver(rpcURL);
-      contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
-    }else if(network == "mainnet"){
-      rpcURL = contractData.klayMainnetRPCURL;
-      caver = new Caver(rpcURL);
-      contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
+    web3Obj = web3.klay;
+    contract = await web3.contract.create(contractData.klayNFTABI,contractAddress);
+    feeRef = KLAY_FEE_REF;
+  }
+  let fee;
+  let tempAddressList = new Array();
+  for(let i = 0;i<addressList.length;i++){
+      tempAddressList.push(caver.utils.toChecksumAddress(addressList[i]));
+  }
+  console.log(contractAddress, tokenList, addressList);
+  let ret = await contract.methods.multiTransfer(tempAddressList, tokenList,tokenList.length).estimateGas({from: account})
+  .then(function(gasAmount) {
+    if(gasAmount > 1000000000){
+      alert('Method ran out of gas');
+      fee = -1;
+    }else if(gasAmount > (balance*100000000)){
+      alert("Insufficient fund in your wallet")
+      fee = -1
+    }else {
+      fee = gasAmount*feeRef;
     }
-    if(caver.klay.accounts.wallet.length == 0){
-      let ret = await caver.klay.accounts.createWithAccountKey(account, privateKey);
-      ret = caver.klay.accounts.wallet.add(ret);
-    }
-    let tempAddressList = new Array();
-    for(let i = 0;i<addressList.length;i++){
-        tempAddressList.push(caver.utils.toChecksumAddress(addressList[i]));
-    }
-    let fee;
-    let ret = await contract.methods.multiTransfer(tempAddressList,tokenList,tokenList.length).estimateGas({from: account})
-    .then(function(gasAmount) {
-      if(gasAmount > 1000000000){
-        alert('Method ran out of gas');
-        fee = -1;
-      }else if(gasAmount > (balance*100000000)){
-        alert("Insufficient fund in your wallet")
-        fee = -1
-      }else {
-        fee = gasAmount*KLAY_FEE_REF;
-      }
-        
+      
+  });
+  let gasfee = parseInt(fee)/100000000;
+  let tempState = "From " + tokenList[0] + " To " + tokenList[tokenList.length-1] + " Total " + tokenList.length + "NFTs will be sent.\n" + gasfee + " ETH.\n Send it?";
+  let confirmTrans = window.confirm(tempState);
+  if(confirmTrans == true){
+    setLoading(true);
+    let ret = await web3Obj.sendTransaction({
+      from: account,
+      to: contractAddress,
+      data: contract.methods.multiTransfer(tempAddressList,tokenList,tokenList.length).encodeABI(),
+      gas: fee
+    }).then(async (res) => {
+      setLoading(false);
+      alert("Transfering Successfully done!");
+
     });
-    let gasfee = parseInt(fee)/100000000;
-    let tempState = "From " + tokenList[0] + " To " + tokenList[tokenList.length-1] + " Total " + tokenList.length + "NFTs will be sent.\n" + gasfee + " KLAY.\n Send it?";
-    let confirmTrans = window.confirm(tempState);
-    if(confirmTrans == true){
-      setLoading(true);
-      let ret = await caver.klay.sendTransaction({
-        type: 'SMART_CONTRACT_EXECUTION',
-        from: account,
-        to: contractAddress,
-        data: contract.methods.multiTransfer(tempAddressList,tokenList,tokenList.length).encodeABI(),
-        gas: '10000000'
-      }).then(async (res) => {
-        setLoading(false);
-        alert("Transfering Successfully done!");
-
-      });
-    }
-
   }
 
 }
@@ -886,30 +692,25 @@ const transferNFT = async (contractAddress, tokenList, addressList) => {
 const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수수료 alert 넣고, 실패시 메시지 띄우고 로딩 없애기
   let entryNum;
   let flag = 0;
+  let web3Obj;
+  let feeRef;
+  let finalPrice;
   if(chain == "ETH" || chain == "POLY"){
-    if(chain == "ETH"){
-      if(network == "goerli"){
-        web3 = await new Web3('https://goerli.infura.io/v3/' + infuraCode);
-        contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-      }else if(network == "mainnet"){
-          web3 = new Web3('https://mainnet.infura.io/v3/' + infuraCode);
-          contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-      }
-    }else if(chain == "POLY"){
-      if(network == "mumbai"){
-          web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + infuraCode);
-          contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
-      }else if(network == "mainnet"){
-          web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + infuraCode);
-          contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
-      }
-    }
-    let ret = await web3.eth.accounts.wallet.add(privateKey);
-    let fee;
-    ret = await contract.methods.mintMultiple(account, mintNum).estimateGas({
+    web3Obj = web3.eth;
+    feeRef = ETH_FEE_REF;
+    contract = new web3Obj.Contract(contractData.ethNFTABI,contractAddress);
+    finalPrice = web3.utils.toWei((price*mintNum).toString(), 'ether').toString();
+  }else if(chain == "KLAY"){
+    web3Obj = web3.klay;
+    feeRef = KLAY_FEE_REF;
+    finalPrice = caver.utils.toPeb((price*mintNum).toString(), 'KLAY');
+    contract = await web3.contract.create(contractData.klayNFTABI,contractAddress);
+  }
+  let fee;
+    let ret = await contract.methods.mintMultiple(account, mintNum).estimateGas({
       from: account,
       to: contractAddress,
-      value: web3.utils.toWei((price*mintNum).toString(), 'ether').toString(),
+      value: finalPrice,
     })
     .then(function(gasAmount) {
       if(gasAmount > 1000000000){
@@ -919,7 +720,7 @@ const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수�
         alert("Insufficient fund in your wallet")
         fee = -1
       }else {
-        fee = gasAmount*ETH_FEE_REF;
+        fee = gasAmount*feeRef;
       }
     })
     .catch((err) =>{
@@ -935,10 +736,10 @@ const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수�
       let confirmTrans = window.confirm(tempState);
       if(confirmTrans == true && fee != -1){
         setLoading(true);
-        ret = await web3.eth.sendTransaction({
+        let ret = await web3Obj.sendTransaction({
           from: account,
           to: contractAddress,
-          value: web3.utils.toWei((price*mintNum).toString(), 'ether'),
+          value: finalPrice,
           data: contract.methods.mintMultiple(account, mintNum).encodeABI(),
           gas: fee
         }).then(async (res) => {
@@ -953,72 +754,6 @@ const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수�
         });
       }
     }
-  }else if(chain == "KLAY"){
-    if(network == "baobab"){
-      rpcURL = contractData.klayTestnetRPCURL;
-      caver = new Caver(rpcURL);
-      contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
-    }else if(network == "mainnet"){
-      rpcURL = contractData.klayMainnetRPCURL;
-      caver = new Caver(rpcURL);
-      contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
-    }
-    if(caver.klay.accounts.wallet.length == 0){
-      let ret = await caver.klay.accounts.createWithAccountKey(account, privateKey);
-      ret = caver.klay.accounts.wallet.add(ret);
-    }
-    let fee;
-    console.log(caver.utils.toPeb((price*mintNum).toString(), 'KLAY'));
-    let ret = await contract.methods.mintMultiple(account, mintNum).estimateGas({
-      from: account,
-      value: caver.utils.toPeb((price*mintNum).toString(), 'KLAY'),
-      gasLimit: "100000000"
-    })
-    .then(function(gasAmount) {
-      console.log(gasAmount);
-      if(gasAmount > 1000000000){
-        alert('Method ran out of gas');
-        fee = -1;
-      }else if(gasAmount > (balance*100000000)){
-        alert("Insufficient fund in your wallet")
-        fee = -1
-      }else {
-        fee = gasAmount*KLAY_FEE_REF;
-      }
-    })
-    .catch((err) =>{
-      flag = 1;
-      alert(err);
-    });
-    if(flag != 1){
-      let gasfee = parseInt(fee)/100000000;
-      let tempState = "Mint " + mintNum + " NFTs\n" + 
-                      "Price : " + (price*mintNum) + "\n" +
-                      "Gas Fee : " + gasfee + " KLAY\n" +
-                      "Mint?";
-      let confirmTrans = window.confirm(tempState);
-      if(confirmTrans == true && fee != -1){
-        setLoading(true);
-        ret = await caver.klay.sendTransaction({
-          from: account,
-          to: contractAddress,
-          value: caver.utils.toPeb(price*mintNum, 'KLAY'),
-          data: contract.methods.mintMultiple(account, mintNum).encodeABI(),
-          gas: fee
-        }).then(async (res) => {
-          setLoading(false);
-          entryNum = await contract.methods.totalSupply().call(); 
-          setTotalSupply(entryNum);
-          alert("Mint has successfully done!");
-
-        }).catch(async (err) => {
-          setLoading(false);
-          alert("Mint has failed for some reason");
-        });
-      }
-    }
-
-  }
 
 
 }
@@ -1030,17 +765,16 @@ const createWallet = async (password, infuraCodeArg) =>{
   electronStore.set('infuraCode', infuraCodeArg);
   let ret;
   let walletTmp;
+  let web3Obj;
   if(chain == "ETH" || chain == "POLY"){
-    ret = await web3.eth.accounts.create();
-    if(ret){
-        walletTmp = await web3.eth.accounts.encrypt(ret.privateKey,password);
-    }
+    web3Obj = web3.eth;
 
   }else if(chain == "KLAY"){
-    ret = await caver.klay.accounts.create();
-    if(ret){
-        walletTmp = await caver.klay.accounts.encrypt(ret.privateKey,password);
-    }
+    web3Obj = web3.klay;
+  }
+  ret = await web3Obj.accounts.create();
+  if(ret){
+      walletTmp = await web3Obj.accounts.encrypt(ret.privateKey,password);
   }
   ipcRenderer.send('createWallet', {
       chain: chain,

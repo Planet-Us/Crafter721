@@ -219,11 +219,11 @@ const getOwnTokenList = async (contractAddress) =>{
       setTokenOwnList(tokenList);
     }else if(props.chain == "KLAY"){
       if(props.network == "baobab"){
-        rpcURL = contractData.baobabRPCURL;
+        rpcURL = contractData.klayTestnetRPCURL;
         caver = new Caver(rpcURL);
         contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
       }else if(props.network == "mainnet"){
-        rpcURL = contractData.mainnetRPCURL;
+        rpcURL = contractData.klayMainnetRPCURL;
         caver = new Caver(rpcURL);
         contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
       }
