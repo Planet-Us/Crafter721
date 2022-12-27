@@ -38,6 +38,7 @@ let gachaABI = contractData.gachaKlayABI;
 const ETH_FEE_REF = 1;
 const KLAY_FEE_REF = 3;
 
+
 function Init(chain){
   if(chain === "ETH"){
     const infuraCode = electronStore.get("infuraCode");
@@ -69,6 +70,7 @@ function Init(chain){
     useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
   }else if(chain == "POLY"){
     const infuraCode = electronStore.get("infuraCode");
+    console.log(infuraCode);
     const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
     const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
 
@@ -83,6 +85,8 @@ function Init(chain){
   }
 
 }
+
+
 
  //mainnet , testnet 별로필요하네 .... 일단 오늘은 이더까
 
@@ -179,6 +183,7 @@ useEffect(() => {
         if(chain == "ETH" || chain == "POLY"){
           web3Obj = web3.eth;
           setInfuraCode(walletTmp.infuraCode);
+          await electronStore.set('infuraCode', infuraCode);
         }else if(chain == "KLAY"){
           web3Obj = web3.klay;
         }
@@ -400,8 +405,7 @@ useEffect(() => {
   }
   const doLogin = async (chain, passwordFromSignPage) => {
     setLoading(true);
-    // 여기서 init 할까 
-    Init(chain)
+    Init(chain);
     ipcRenderer.send('getWallet', {
       chain : chain
     })
@@ -410,6 +414,7 @@ useEffect(() => {
   }
   const makeNewWallet = async () => {
     setLoading(true);
+
     let newWallet;
     let ret;
     let newWalletEncrypt;
@@ -459,7 +464,7 @@ useEffect(() => {
       
         ipcRenderer.send('addNewWallet', {
           chain: chain,
-          newWallet: newWalletEncrypt[0]
+          newWallet: newWalletEncrypt[newWalletEncrypt.length-1]
         });
       }else if(chain == "KLAY"){
         try{
@@ -762,15 +767,19 @@ const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수�
 const createWallet = async (password, infuraCodeArg) =>{
   setLoading(true);
   setInfuraCode(infuraCodeArg);
-  electronStore.set('infuraCode', infuraCodeArg);
+  await electronStore.set('infuraCode', infuraCodeArg);
+  Init(chain);
+
   let ret;
   let walletTmp;
   let web3Obj;
+  console.log(web3);
+  const web3Temp = useCrafterStore.getState().mainnetWeb3;
   if(chain == "ETH" || chain == "POLY"){
-    web3Obj = web3.eth;
+    web3Obj = web3Temp.eth;
 
   }else if(chain == "KLAY"){
-    web3Obj = web3.klay;
+    web3Obj = web3Temp.klay;
   }
   ret = await web3Obj.accounts.create();
   if(ret){

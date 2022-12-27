@@ -30,10 +30,10 @@ function createWindow() {
             nodeIntegrationInWorker: true // <---  for web workers
         }
     });
-    console.log(process.env.NODE_ENV + " mode");
-    if(process.env.NODE_ENV.toString() != "dev"){
-        win.setMenu(null);
-    }
+    // console.log(process.env.NODE_ENV + " mode");
+    // if(process.env.NODE_ENV.toString() != "dev"){
+    //     win.setMenu(null);
+    // }
     const isWindows = process.platform === 'win32';
   let needsFocusFix = false;
   let triggeringProgrammaticBlur = false;
@@ -97,22 +97,33 @@ ipcMain.on('createWallet', (event, arg) =>{
     const walletBuffer = fs.readFileSync('./wallet.json');
     const walletJson = walletBuffer.toString();
     const walletData = JSON.parse(walletJson);
+    let ethWallet = 0;
+    let klayWallet = 0;
+    let polyWallet = 0;
     if(arg.chain == "ETH"){
         walletData.ethWallet.push(arg.wallet);
         walletData.ethPassword = arg.password;
         walletData.infuraCode = arg.infuraCode;
+        ethWallet = 1;
         event.sender.send('getWallet-reply', arg.wallet);
     }else if(arg.chain == "POLY"){
         walletData.polyWallet.push(arg.wallet);
         walletData.polyPassword = arg.password;
         walletData.polyInfuraCode = arg.infuraCode;
+        polyWallet = 1;
         event.sender.send('getWallet-reply', arg.wallet);
     }else if(arg.chain == "KLAY"){
         walletData.klayWallet.push(arg.wallet);
         walletData.klayPassword = arg.password
+        klayWallet = 1;
         event.sender.send('getWallet-reply', arg.wallet);
     }
     fs.writeFileSync('./wallet.json', JSON.stringify(walletData));
+    event.sender.send('checkWallet-reply', {
+        "klayWallet" : klayWallet,
+        "polyWallet" : polyWallet,
+        "ethWallet" : ethWallet
+    });
     event.sender.send('createWallet-reply', arg.wallet);
 
 })
