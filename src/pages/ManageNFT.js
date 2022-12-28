@@ -17,6 +17,8 @@ import Caver from "caver-js";
 import FormControl from '@mui/material/FormControl';
 import '../bootstrap.min.css';
 import { makeStyles } from '@mui/styles';
+import { useBalance, useCrafterStore, useGachaContract, useWeb3 } from '../hooks';
+import { WebOutlined } from '@mui/icons-material';
 const ipcRenderer = window.require('electron').ipcRenderer;
 const HtmlTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -74,6 +76,8 @@ export default function ManageNFT(props) {
     const [transferNum, setTransferNum] = useState(0);
     const [price, setPrice] = useState(0);
     const transferRange = [start, end];
+    
+    let web3 = useWeb3();
 
     
 
@@ -81,6 +85,8 @@ export default function ManageNFT(props) {
     const contractAddressChange = async (e) => {//컨트랙트 선택 후 정보 조회 후 자꾸 리로드됨
         setContractAddress(e.target.value);
         transferList = [];
+        console.log(e.target.value);
+        console.log(props);
         if(props.network == "mainnet"){
             for(let i = 0; i<props.contractListMain.length;i++){
                 if(e.target.value == props.contractListMain[i].contract){
@@ -177,85 +183,62 @@ export default function ManageNFT(props) {
 const getOwnTokenList = async (contractAddress) =>{
     let entryNum;
     let tokenList = new Array();
-    let web3;
+    let web3Obj;
     let caver;
     if(props.chain == "ETH" || props.chain == "POLY"){
-      if(props.chain == "ETH"){
-        if(props.network == "goerli"){
-          web3 = await new Web3('https://goerli.infura.io/v3/' + props.infuraCode);
-          contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-        }else if(props.network == "mainnet"){
-            web3 = new Web3('https://mainnet.infura.io/v3/' + props.infuraCode);
-            contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
-        }
-      }else if(props.chain == "POLY"){
-        if(props.network == "mumbai"){
-            web3 = new Web3("https://polygon-mumbai.infura.io/v3/" + props.infuraCode);
-            contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
-        }else if(props.network == "mainnet"){
-            web3 = new Web3("https://polygon-mainnet.infura.io/v3/" + props.infuraCode);
-            contract = new web3.eth.Contract(contractData.polyNFTABI,contractAddress);
-        }
-      }
-      let ret = await web3.eth.accounts.wallet.add(props.privateKey);
-      entryNum = await contract.methods.totalSupply().call(); 
-      setTotalSupply(entryNum);
-      let count;
-      if(entryNum%1000 > 0){
-        count = (entryNum/1000) + 1;
-      }else{
-        count = (entryNum/1000);
+      web3Obj = web3.eth;
+      let ret = await web3Obj.accounts.wallet.add(props.privateKey);
+      contract = new web3Obj.Contract(contractData.ethNFTABI,contractAddress);
+      // entryNum = await contract.methods.totalSupply().call(); 
+      // setTotalSupply(entryNum);
+      // let count;
+      // if(entryNum%1000 > 0){
+      //   count = (entryNum/1000) + 1;
+      // }else{
+      //   count = (entryNum/1000);
   
-      }
+      // }
   
-      for(let i = 0;i<count;i++){
-        let tempTokenList = await contract.methods.getTokenOwn(i*1000,((i+1)*1000)).call(); 
-        for(let j = 0;j<tempTokenList.length;j++){
-          if(parseInt(tempTokenList[j], 16) != 0){
-            tokenList.push(j+(i*1000));
-          }
-        }
-      }
-      setTokenOwnList(tokenList);
+      // for(let i = 0;i<count;i++){
+      //   let tempTokenList = await contract.methods.getTokenOwn(i*1000,((i+1)*1000)).call(); 
+      //   for(let j = 0;j<tempTokenList.length;j++){
+      //     if(parseInt(tempTokenList[j], 16) != 0){
+      //       tokenList.push(j+(i*1000));
+      //     }
+      //   }
+      // }
+      // setTokenOwnList(tokenList);
     }else if(props.chain == "KLAY"){
-      if(props.network == "baobab"){
-        rpcURL = contractData.baobabRPCURL;
-        caver = new Caver(rpcURL);
-        contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
-      }else if(props.network == "mainnet"){
-        rpcURL = contractData.mainnetRPCURL;
-        caver = new Caver(rpcURL);
-        contract = await caver.contract.create(contractData.klayNFTABI,contractAddress);
+      web3Obj = web3.klay;
+      if(web3Obj.accounts.wallet.length == 0){
+        let ret = await web3Obj.accounts.createWithAccountKey(props.accounts, props.privateKey);
+        ret = await web3Obj.accounts.wallet.add(ret);
       }
-      if(caver.klay.accounts.wallet.length == 0){
-        let ret = await caver.klay.accounts.createWithAccountKey(props.accounts, props.privateKey);
-        ret = await caver.klay.accounts.wallet.add(ret);
-      }
-      entryNum = await contract.methods.totalSupply().call();
-      let count;
-      if(entryNum%1000 == entryNum){
-        count = 1;
-      }else if(entryNum%1000 > 0){
-        count = (entryNum/1000) + 1;
-      }else{
-        count = (entryNum/1000);
-  
-      }
-  
-      for(let i = 0;i<count;i++){
-        let tempTokenList = await contract.methods.getTokenOwn(i*1000,((i+1)*1000)).call(); 
-        for(let j = 0;j<tempTokenList.length;j++){
-          if(parseInt(tempTokenList[j], 16) != 0){
-            tokenList.push(j+(i*1000));
-          }
+      contract = web3Obj.contract.create(contractData.klayNFTABI,contractAddress);
+    }
+    entryNum = await contract.methods.totalSupply().call();
+    let count;
+    if(entryNum%1000 == entryNum){
+      count = 1;
+    }else if(entryNum%1000 > 0){
+      count = (entryNum/1000) + 1;
+    }else{
+      count = (entryNum/1000);
+
+    }
+
+    for(let i = 0;i<count;i++){
+      let tempTokenList = await contract.methods.getTokenOwn(i*1000,((i+1)*1000)).call(); 
+      for(let j = 0;j<tempTokenList.length;j++){
+        if(parseInt(tempTokenList[j], 16) != 0){
+          tokenList.push(j+(i*1000));
         }
       }
-      setTotalSupply(entryNum);
-      // totalSupply = entryNum;
-      setTokenOwnList(tokenList);
-      // tokenOwnList = tokenList;
-  
     }
+    setTotalSupply(entryNum);
+    // totalSupply = entryNum;
+    setTokenOwnList(tokenList);
+    // tokenOwnList = tokenList;
   
   }
     

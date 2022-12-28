@@ -2,6 +2,7 @@ import react, {Component, useEffect, useState} from 'react';
 import * as React from 'react';
 import {TextField, Button} from "@mui/material"
 import { styled } from '@mui/material/styles';
+import contractData from '../Contract';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -11,6 +12,12 @@ import FormControl from '@mui/material/FormControl';
 import Card from '@mui/material/Card';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Logo from '../Logo.png';
+import { useCrafterStore} from '../hooks';
+import Web3 from "web3";
+import Caver from "caver-js";
+import {urls} from '../urls'
+import electronStore from '../utils/electronStore';
+
 const ipcRenderer = window.require('electron').ipcRenderer;
 const HtmlTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -23,7 +30,52 @@ const HtmlTooltip = styled(({ className, ...props }) => (
     border: '1px solid #dadde9',
   },
 }));
-
+function Init(chain){
+    if(chain === "ETH"){
+      const infuraCode = electronStore.get("infuraCode");
+  
+      const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
+      const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
+  
+      const mainnetGachaContract = new mainnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
+      const testnetGachaContract = new testnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
+  
+      const mainnetGachaAddress = contractData.gachaAddressEth;
+      const testnetGachaAddress = contractData.gachaAddressRinkeby;
+  
+      const category = "eth";
+  
+      useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
+    } else if(chain == "KLAY"){
+      const mainnetWeb3 = new Caver(`${contractData.klayMainnetRPCURL}`);
+      const testnetWeb3 = new Caver(`${contractData.klayTestnetRPCURL}`);
+      
+  
+      const mainnetGachaContract = mainnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
+      const testnetGachaContract = testnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressBaobab);
+      
+      const mainnetGachaAddress = contractData.gachaAddressKlay;
+      const testnetGachaAddress = contractData.gachaAddressBaobab;
+      
+      const category = "klay";
+      useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
+    }else if(chain == "POLY"){
+      const infuraCode = electronStore.get("infuraCode");
+      console.log(infuraCode);
+      const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
+      const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
+  
+      const mainnetGachaContract = new mainnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressPoly);
+      const testnetGachaContract = new testnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressMumbai);
+      
+      const mainnetGachaAddress = contractData.gachaAddressPoly;
+      const testnetGachaAddress = contractData.gachaAddressMumbai;
+      
+      const category = "eth";
+      useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
+    }
+  
+  }
 
 export default function Login(props) {
     
@@ -108,10 +160,13 @@ export default function Login(props) {
         props.changeChain(e.target.value)
     }
     const doLoginFromApp = async () => {
+        Init(chain);
         props.doLogin(chain,password);
         
     }
     const makeAccount = async () => {
+        await electronStore.set('infuraCode', infuraCode);
+        Init(chain);
         let ret = await props.createWallet(password, infuraCode);
         setNewAccountPage(false);
     }
