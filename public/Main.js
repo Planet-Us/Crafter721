@@ -32,7 +32,7 @@ function createWindow() {
     });
     // console.log(process.env.NODE_ENV + " mode");
     // if(process.env.NODE_ENV.toString() != "dev"){
-    //     win.setMenu(null);
+        win.setMenu(null);
     // }
     const isWindows = process.platform === 'win32';
   let needsFocusFix = false;
@@ -100,6 +100,7 @@ ipcMain.on('createWallet', (event, arg) =>{
     let ethWallet = 0;
     let klayWallet = 0;
     let polyWallet = 0;
+    let bscWallet = 0;
     if(arg.chain == "ETH"){
         walletData.ethWallet.push(arg.wallet);
         walletData.ethPassword = arg.password;
@@ -117,12 +118,18 @@ ipcMain.on('createWallet', (event, arg) =>{
         walletData.klayPassword = arg.password
         klayWallet = 1;
         event.sender.send('getWallet-reply', arg.wallet);
+    }else if(arg.chain == "BSC"){
+        walletData.bscWallet.push(arg.wallet);
+        walletData.bscPassword = arg.password
+        bscWallet = 1;
+        event.sender.send('getWallet-reply', arg.wallet);
     }
     fs.writeFileSync('./wallet.json', JSON.stringify(walletData));
     event.sender.send('checkWallet-reply', {
         "klayWallet" : klayWallet,
         "polyWallet" : polyWallet,
-        "ethWallet" : ethWallet
+        "ethWallet" : ethWallet,
+        "bscWallet": bscWallet
     });
     event.sender.send('createWallet-reply', arg.wallet);
 
@@ -132,6 +139,7 @@ ipcMain.on('checkWallet', (event, arg) =>{
     let ethWallet = 0;
     let klayWallet = 0;
     let polyWallet = 0;
+    let bscWallet = 0;
     if(fs.existsSync( './wallet.json' )){
         const walletBuffer = fs.readFileSync('./wallet.json');
         const walletJson = walletBuffer.toString();
@@ -145,15 +153,20 @@ ipcMain.on('checkWallet', (event, arg) =>{
         if(walletData.klayWallet.length > 0){
             klayWallet = 1;
         }
+        if(walletData.bscWallet.length > 0){
+            bscWallet = 1;
+        }
 
     }else{
         const walletEmptyData = {
             "ethWallet": [],
             "polyWallet": [],
             "klayWallet": [],
+            "bscWallet":[],
             "ethPassword": "",
             "polyPassword": "",
             "klayPassword": "",
+            "bscPassword": "",
             "infuraCode": ""
         }
         fs.writeFileSync('./wallet.json', JSON.stringify(walletEmptyData));
@@ -162,7 +175,8 @@ ipcMain.on('checkWallet', (event, arg) =>{
     event.sender.send('checkWallet-reply', {
         "klayWallet" : klayWallet,
         "polyWallet" : polyWallet,
-        "ethWallet" : ethWallet
+        "ethWallet" : ethWallet,
+        "bscWallet": bscWallet
     });
 
 });
@@ -201,6 +215,14 @@ ipcMain.on('addNewWallet', (event, arg) =>{
             "walletData" : arg.newWallet,
             "password" : walletData.klayPassword
         });
+    }else if(arg.chain == "BSC"){
+        if(typeof arg.newWallet != undefined){
+            walletData.bscWallet.push(arg.newWallet);
+        }
+        event.sender.send('addWallet-reply', {
+            "walletData" : arg.newWallet,
+            "password" : walletData.bscPassword
+        });
     }
     fs.writeFileSync('./wallet.json', JSON.stringify(walletData));
 })
@@ -227,6 +249,11 @@ ipcMain.on('getWallet', (event, arg) =>{
         event.sender.send('getWallet-reply', {
             "walletData" : walletData.klayWallet,
             "password": walletData.klayPassword
+        });
+    }else if(arg.chain == "BSC"){
+        event.sender.send('getWallet-reply', {
+            "walletData" : walletData.bscWallet,
+            "password": walletData.bscPassword
         });
     }
 
@@ -338,6 +365,39 @@ ipcMain.on('updateContract', (event, arg) =>{
                 contractMainnetList.push(contractData.KLAY.mainnet[i]);
             }
         }
+    }else if(arg.chain == "BSC"){
+        if(arg.network == "testnet"){
+            for(let i = 0;i<contractData.BSC.testnet.length;i++){
+                console.log(contractData.BSC.testnet[i].contract);
+                if(contractData.BSC.testnet[i].contract == arg.contract){
+                    if(arg.update == "maxSupply"){
+                        contractData.BSC.testnet[i].maxSupply = arg.updateData;
+                    }else if(arg.update == "price"){
+                        contractData.BSC.testnet[i].price = arg.updateData;
+                    }else if(arg.update == "baseURL"){
+                        contractData.BSC.testnet[i].baseURL = arg.updateData;
+                    }else if(arg.update == "purchaseLimit"){
+                        contractData.BSC.testnet[i].purchaseLimit = arg.updateData;
+                    }
+                }
+                contractTestnetList.push(contractData.BSC.testnet[i]);
+            }
+        }else if(arg.network == "mainnet"){
+            for(let i = 0;i<contractData.BSC.mainnet.length;i++){
+                if(contractData.BSC.mainnet[i].contract == arg.contract){
+                    if(arg.update == "maxSupply"){
+                        contractData.BSC.mainnet[i].maxSupply = arg.updateData;
+                    }else if(arg.update == "price"){
+                        contractData.BSC.mainnet[i].price = arg.updateData;
+                    }else if(arg.update == "baseURL"){
+                        contractData.BSC.mainnet[i].baseURL = arg.updateData;
+                    }else if(arg.update == "purchaseLimit"){
+                        contractData.BSC.mainnet[i].purchaseLimit = arg.updateData;
+                    }
+                }
+                contractMainnetList.push(contractData.BSC.mainnet[i]);
+            }
+        }
     }
 
     fs.writeFileSync('./deployedContracts.json', JSON.stringify(contractData));
@@ -363,6 +423,10 @@ ipcMain.on('contractDeployed', async (event, arg) =>{
             },
             "KLAY": {
                 "baobab": [],
+                "mainnet": []
+            },
+            "BSC": {
+                "testnet": [],
                 "mainnet": []
             }
         }
@@ -406,6 +470,17 @@ ipcMain.on('contractDeployed', async (event, arg) =>{
             contractList[contractList.length] = arg.contractInfo;
             contractData.KLAY.mainnet = contractList;
         }
+    }else if(arg.chain == "BSC"){
+        if(arg.network == "testnet"){
+            let contractList = contractData.BSC.testnet;
+            contractList[contractList.length] = arg.contractInfo;
+            contractData.BSC.testnet = contractList;
+            console.log("got here");
+        }else if(arg.network == "mainnet"){
+            let contractList = contractData.BSC.mainnet;
+            contractList[contractList.length] = arg.contractInfo;
+            contractData.BSC.mainnet = contractList;
+        }
     }
 
     fs.writeFileSync('./deployedContracts.json', JSON.stringify(contractData));
@@ -428,6 +503,10 @@ ipcMain.on('getContractList', async (event, arg) =>{
             },
             "KLAY": {
                 "baobab": [],
+                "mainnet": []
+            },
+            "BSC": {
+                "testnet": [],
                 "mainnet": []
             }
         }
@@ -483,6 +562,22 @@ ipcMain.on('getContractList', async (event, arg) =>{
             for(let i = 0;i<contractData.KLAY.mainnet.length;i++){
                 if(contractData.KLAY.mainnet[i].owner == arg.account){
                     contractMainnetList.push(contractData.KLAY.mainnet[i]);
+                }
+            }
+
+        }
+    }else if(arg.chain == "BSC"){
+        console.log(contractData.BSC.contractInfo);
+        if(contractData.BSC){
+            for(let i = 0;i<contractData.BSC.testnet.length;i++){
+                console.log(contractData.BSC.testnet[i].owner == arg.account);
+                if(contractData.BSC.testnet[i].owner == arg.account){
+                    contractTestnetList.push(contractData.BSC.testnet[i]);
+                }
+            }
+            for(let i = 0;i<contractData.BSC.mainnet.length;i++){
+                if(contractData.BSC.mainnet[i].owner == arg.account){
+                    contractMainnetList.push(contractData.BSC.mainnet[i]);
                 }
             }
 
@@ -673,6 +768,20 @@ ipcMain.on('changeContractList', (event, arg) =>{
             for(let i = 0;i<contractData.KLAY.mainnet.length;i++){
                 if(contractData.KLAY.mainnet[i].contract == arg.contractData.contract){
                     contractData.KLAY.mainnet[i] = arg.contractData;
+                }
+            }
+        }
+    }else if(arg.chain == "BSC"){
+        if(arg.network == "testnet"){
+            for(let i = 0;i<contractData.BSC.testnet.length;i++){
+                if(contractData.BSC.testnet[i].contract == arg.contractData.contract){
+                    contractData.BSC.testnet[i] = arg.contractData;
+                }
+            }
+        }else if(arg.network == "mainnet"){
+            for(let i = 0;i<contractData.BSC.mainnet.length;i++){
+                if(contractData.BSC.mainnet[i].contract == arg.contractData.contract){
+                    contractData.BSC.mainnet[i] = arg.contractData;
                 }
             }
         }

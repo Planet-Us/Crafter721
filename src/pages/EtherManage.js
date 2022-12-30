@@ -153,12 +153,17 @@ export default function EtherManage(props) {
             }else{
                 tempURL = "https://polygonscan.com/address/" + contractAddress;
             }
-
         }else if(props.chain == "KLAY"){
             if(props.network == "baobab"){
                 tempURL = "https://baobab.scope.klaytn.com/account/" + contractAddress;
             }else{
                 tempURL = "https://scope.klaytn.com/account/" + contractAddress;
+            }
+        }else if(props.chain == "BSC"){
+            if(props.network == "testnet"){
+                tempURL = "https://testnet.bscscan.com/address/" + contractAddress;
+            }else{
+                tempURL = "https://bscscan.com/address/" + contractAddress;
             }
         }
         ipcRenderer.send('openFaucet', {
@@ -225,6 +230,9 @@ export default function EtherManage(props) {
                         :
                         props.chain == "POLY" ?
                         <Button onClick={openEtherScan} style={{marginLeft: "10px"}} variant="contained">Polygon Scan</Button>
+                        :
+                        props.chain == "BSC" ?
+                        <Button onClick={openEtherScan} style={{marginLeft: "10px"}} variant="contained">BSC Scan</Button>
                         :
                         <Button onClick={openEtherScan} style={{marginLeft: "10px"}} variant="contained">Klay Scope</Button>
                         }

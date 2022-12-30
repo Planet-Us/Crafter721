@@ -82,6 +82,18 @@ function Init(chain){
     
     const category = "eth";
     useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
+  }else if(chain == "BSC"){
+    const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}`);
+    const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}`);
+
+    const mainnetGachaContract = new mainnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressBsc);
+    const testnetGachaContract = new testnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressBscTestnet);
+    
+    const mainnetGachaAddress = contractData.gachaAddressBsc;
+    const testnetGachaAddress = contractData.gachaAddressBscTestnet;
+    
+    const category = "eth";
+    useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
   }
 
 }
@@ -180,7 +192,7 @@ useEffect(() => {
       let walletArray = new Array();
       let web3Obj;
       if(password.length >0){
-        if(chain == "ETH" || chain == "POLY"){
+        if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
           web3Obj = web3.eth;
           setInfuraCode(walletTmp.infuraCode);
           await electronStore.set('infuraCode', infuraCode);
@@ -246,7 +258,7 @@ useEffect(() => {
       let decryptedWallet;
       // console.log(walletTmp);
       if(password.length >0){
-        if(chain == "ETH" || chain == "POLY"){
+        if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
             decryptedWallet = await web3.eth.accounts.decrypt(walletTmp.walletData, password);
         }else if(chain == "KLAY"){
             decryptedWallet = await caver.klay.accounts.decrypt(walletTmp.walletData, password);
@@ -296,7 +308,7 @@ useEffect(() => {
     let web3Obj;
     let feeRef;
     let signObj;
-    if(chain == "ETH" || chain == "POLY"){
+    if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
       web3Obj = web3.eth;
       nftContract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
       feeRef = ETH_FEE_REF;
@@ -419,7 +431,7 @@ useEffect(() => {
     let ret;
     let newWalletEncrypt;
     // console.log(chain);
-    if(chain == "ETH" || chain == "POLY"){
+    if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
       newWallet = await web3.eth.accounts.wallet.create(1);
       ret = await web3.eth.accounts.wallet.add(newWallet[0].privateKey);
       newWalletEncrypt = await web3.eth.accounts.wallet.encrypt(password);
@@ -450,7 +462,7 @@ useEffect(() => {
     let ret;
     let newWalletEncrypt;
     console.log(newPrivateKey.length);
-      if(chain == "ETH" || chain == "POLY"){
+      if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
         try{
           ret = await web3.eth.accounts.wallet.add(newPrivateKey);
 
@@ -491,7 +503,7 @@ useEffect(() => {
     let finalPrice;
     let web3Obj;
     let feeRef;
-    if(chain == "ETH" || chain == "POLY"){
+    if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
       finalPrice = web3.utils.toWei(price.toString(), 'ether');
       web3Obj = web3.eth;
       feeRef = ETH_FEE_REF;
@@ -579,7 +591,7 @@ useEffect(() => {
 
   
   const transferEth = async (from, to, amount) =>{
-      if(chain == "ETH" || chain == "POLY"){
+      if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
         let ret = await web3.eth.estimateGas({
           from: account,
           to: to,
@@ -647,7 +659,7 @@ const transferNFT = async (contractAddress, tokenList, addressList) => {
   let entryNum;
   let web3Obj;
   let feeRef;
-  if(chain == "ETH" || chain == "POLY"){
+  if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
     web3Obj = web3.eth;
     contract = new web3.eth.Contract(contractData.ethNFTABI,contractAddress);
     feeRef = ETH_FEE_REF;
@@ -700,7 +712,7 @@ const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수�
   let web3Obj;
   let feeRef;
   let finalPrice;
-  if(chain == "ETH" || chain == "POLY"){
+  if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
     web3Obj = web3.eth;
     feeRef = ETH_FEE_REF;
     contract = new web3Obj.Contract(contractData.ethNFTABI,contractAddress);
@@ -775,7 +787,7 @@ const createWallet = async (password, infuraCodeArg) =>{
   let web3Obj;
   console.log(web3);
   const web3Temp = useCrafterStore.getState().mainnetWeb3;
-  if(chain == "ETH" || chain == "POLY"){
+  if(chain == "ETH" || chain == "POLY" || chain == "BSC"){
     web3Obj = web3Temp.eth;
 
   }else if(chain == "KLAY"){
