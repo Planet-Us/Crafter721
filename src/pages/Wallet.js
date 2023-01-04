@@ -64,6 +64,10 @@ export default function Wallet(props) {
             ipcRenderer.send('openFaucet', {
                 url: "https://baobab.wallet.klaytn.foundation/faucet"
             });
+        } else if (props.chain == "BSC") {
+            ipcRenderer.send('openFaucet', {
+                url: "https://testnet.bnbchain.org/faucet-smart"
+            });
         }
 
     }
@@ -112,6 +116,9 @@ export default function Wallet(props) {
                     :
                     props.chain == "POLY" ?
                     <span style={{ width: "100%", fontSize: "30px" }}>{balance} MATIC</span>                    
+                    :
+                    props.chain == "BSC" ?
+                    <span style={{ width: "100%", fontSize: "30px" }}>{balance} BNB</span>                    
                     :
                     <span style={{ width: "100%", fontSize: "30px" }}>{balance} KLAY</span>
                 }

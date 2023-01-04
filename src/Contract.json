@@ -3,6 +3,10 @@
 	"snapshotContract": "0x1DCF7c92329a6802651B59957F8247fF029d0237",
 	"snapshotContract2Rinkeby": "0xc702AA46207246867bFbAd0276a2C02d38380f51",
 	"snapshotContract2": "0x45fcB6450e8e4630f49bDED678349c976e13dDeC",
+	"snapshotContractMumbai": "0x42db91f38aB59e383F0B0F50602e7664b3ceA5b8",
+	"snapshotContractPoly" : "0xA1Dc8f72A9c552E2D13fddCcE2b0f5A5c1855e27",
+	"snapshotContractBSCTestnet": "0x3D3AA0c81b889E150b3665B7F13627a7baA6951a",
+	"snapshotContractBSC" : "0xE7946cc668a5b79F44253A2Ff4f99E24fec0d200",
 	"snapshot2ABI":[
 		{
 			"anonymous": false,
@@ -209,6 +213,8 @@
 	"gachaAddressBaobab": "0x74f290106174634418039d4EfC83DE625F85518E",
     "gachaAddressRinkeby" : "0x084a02a82DC08722320de1abd838d8dF4B8FffE6",
     "gachaAddressEth" : "0x4B5B8129cB97c39162651dB461F72999725eFb05",
+    "gachaAddressBscTestnet" : "0x4B01Bf7778F198253422D77784127163CDa6FE62",
+    "gachaAddressBsc" : "0x141238C37785963e076C3dc28Eac20810a71da4c",
 	"gachaPolyABI": [
 		{
 		  "inputs": [],

@@ -30,52 +30,6 @@ const HtmlTooltip = styled(({ className, ...props }) => (
     border: '1px solid #dadde9',
   },
 }));
-function Init(chain){
-    if(chain === "ETH"){
-      const infuraCode = electronStore.get("infuraCode");
-  
-      const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
-      const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
-  
-      const mainnetGachaContract = new mainnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressEth);
-      const testnetGachaContract = new testnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressRinkeby);
-  
-      const mainnetGachaAddress = contractData.gachaAddressEth;
-      const testnetGachaAddress = contractData.gachaAddressRinkeby;
-  
-      const category = "eth";
-  
-      useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
-    } else if(chain == "KLAY"){
-      const mainnetWeb3 = new Caver(`${contractData.klayMainnetRPCURL}`);
-      const testnetWeb3 = new Caver(`${contractData.klayTestnetRPCURL}`);
-      
-  
-      const mainnetGachaContract = mainnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressKlay);
-      const testnetGachaContract = testnetWeb3.contract.create(contractData.gachaKlayABI, contractData.gachaAddressBaobab);
-      
-      const mainnetGachaAddress = contractData.gachaAddressKlay;
-      const testnetGachaAddress = contractData.gachaAddressBaobab;
-      
-      const category = "klay";
-      useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
-    }else if(chain == "POLY"){
-      const infuraCode = electronStore.get("infuraCode");
-      console.log(infuraCode);
-      const mainnetWeb3 = new Web3(`${urls[chain]["mainnet"]}${infuraCode}`);
-      const testnetWeb3 = new Web3(`${urls[chain]["testnet"]}${infuraCode}`);
-  
-      const mainnetGachaContract = new mainnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressPoly);
-      const testnetGachaContract = new testnetWeb3.eth.Contract(contractData.gachaEthABI, contractData.gachaAddressMumbai);
-      
-      const mainnetGachaAddress = contractData.gachaAddressPoly;
-      const testnetGachaAddress = contractData.gachaAddressMumbai;
-      
-      const category = "eth";
-      useCrafterStore.setState({mainnetWeb3: mainnetWeb3, testnetWeb3:testnetWeb3, mainnetGachaContract:mainnetGachaContract, testnetGachaContract:testnetGachaContract, category:category, mainnetGachaAddress:mainnetGachaAddress, testnetGachaAddress:testnetGachaAddress});
-    }
-  
-  }
 
 export default function Login(props) {
     
@@ -90,6 +44,7 @@ export default function Login(props) {
     const [checkKlayWallet, setCheckKlayWallet] = useState(false);
     const [checkEthWallet, setCheckEthWallet] = useState(false);
     const [checkPolyWallet, setCheckPolyWallet] = useState(false);
+    const [checkBscWallet, setCheckBscWallet] = useState(false);
     let passwordArr = [newPass, newPass2];
 
     useEffect(() => {
@@ -108,6 +63,9 @@ export default function Login(props) {
           }
           if(data.polyWallet == 1){
             setCheckPolyWallet(true);
+          }
+          if(data.bscWallet == 1){
+            setCheckBscWallet(true);
           }
 
       });
@@ -160,13 +118,11 @@ export default function Login(props) {
         props.changeChain(e.target.value)
     }
     const doLoginFromApp = async () => {
-        Init(chain);
         props.doLogin(chain,password);
         
     }
     const makeAccount = async () => {
         await electronStore.set('infuraCode', infuraCode);
-        Init(chain);
         let ret = await props.createWallet(password, infuraCode);
         setNewAccountPage(false);
     }
@@ -196,7 +152,7 @@ export default function Login(props) {
                 <span>CONFIRM PASSWORD</span>
                 <TextField style={{width : '100%'}} value={newPass2} onChange={(e) => newPass2Change(e)} type="password" id="outlined-basic" label="Password" variant="outlined" />
                 {passwordComment}
-                {chain == "ETH" || chain == "POLY" ?
+                {chain == "ETH" || chain == "POLY"?
                     <>
                         <span>INFURA API KEY</span>
                         <HtmlTooltip
@@ -232,12 +188,13 @@ export default function Login(props) {
                         <MenuItem value={"ETH"}>Ethereum</MenuItem>
                         <MenuItem value={"KLAY"}>Klaytn</MenuItem>
                         <MenuItem value={"POLY"}>Polygon</MenuItem>
+                        <MenuItem value={"BSC"}>BSC</MenuItem>
                         </Select>
                     </FormControl>
                 </Box>
                 <span>PASSWORD</span>
                 <TextField style={{width : '100%', color: "white", border: "1px solid white"}} type="password" value={password} onChange={(e) => handleChange(e)} id="outlined-basic" label="Outlined" variant="outlined" />
-                {(chain == "KLAY" && checkKlayWallet == 1) || (chain == "ETH" && checkEthWallet == 1) || (chain == "POLY" && checkPolyWallet == 1) ?
+                {(chain == "KLAY" && checkKlayWallet == 1) || (chain == "ETH" && checkEthWallet == 1) || (chain == "POLY" && checkPolyWallet == 1) || (chain == "BSC" && checkBscWallet == 1) ?
                     <Button style={{marginTop: "10px", borderRadius: "24px"}} onClick={doLoginFromApp} variant="contained">Sign In</Button>
                 : 
                     <Button style={{marginTop: "10px", borderRadius: "24px"}} onClick={newAccountChange} variant="contained">New Account</Button>

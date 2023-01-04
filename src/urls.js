@@ -14,5 +14,9 @@ export const urls = {
     TRON:{
         mainnet:"",
         testnet:""
+    },
+    BSC:{
+        mainnet:"https://bsc-dataseed1.binance.org/",
+        testnet:"https://data-seed-prebsc-1-s1.binance.org:8545/"
     }
 }

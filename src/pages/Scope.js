@@ -12,6 +12,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import klaytnFunc from '../klaytnFunc';
 import ethFunc from '../ethFunc';
+import polyFunc from '../polyFunc';
+import bscFunc from '../bscFunc';
 import '../bootstrap.min.css';
 
 let columns = [
@@ -51,9 +53,6 @@ export default function Scope(props) {
         setChain(e.target.value);
     }
     const networkChange = (e) => {
-        if(e.target.value == "Meta"){
-            setAccount("0x791a7dc0ef8ab1f995f595e39fd196c6c8aa5fc9");
-        }
         setNetwork(e.target.value);
     }
     const dataTypeChange = (e) => {
@@ -148,6 +147,66 @@ export default function Scope(props) {
                 });
                 }
             }
+        }else if(chain == "Poly"){
+            if(network == "Main"){
+                if(dataType == 1){
+                    ret = await polyFunc(2,account,"mainnet", checkOne, props.infuraCode).then((res) => {
+                        console.log(res);
+                    setResult1(res);
+                    setLoading(false);
+                    
+                });
+                }else if(dataType == 2){
+                    ret = await polyFunc(1,account,"mainnet", checkOne, props.infuraCode).then((res) => {
+                    setResult2(res);
+                    setLoading(false);
+                });
+                }
+            }else if(network == "Test"){
+                if(dataType == 1){
+                    ret = await polyFunc(2,account,"mumbai", checkOne, props.infuraCode).then((res) => {
+                        console.log(res);
+                        setResult1(res);
+                        setLoading(false);
+                });
+                }else if(dataType == 2){
+                    ret = await polyFunc(1,account,"mumbai", checkOne, props.infuraCode).then((res) => {
+                        console.log(res);
+                    setResult2(res);
+                    setLoading(false);
+                });
+                }
+            }
+        }else if(chain == "Bsc"){
+            if(network == "Main"){
+                if(dataType == 1){
+                    ret = await bscFunc(2,account,"mainnet", checkOne, props.infuraCode).then((res) => {
+                        console.log(res);
+                    setResult1(res);
+                    setLoading(false);
+                    
+                });
+                }else if(dataType == 2){
+                    ret = await bscFunc(1,account,"mainnet", checkOne, props.infuraCode).then((res) => {
+                    setResult2(res);
+                    setLoading(false);
+                });
+                }
+            }else if(network == "Test"){
+                if(dataType == 1){
+                    ret = await bscFunc(2,account,"testnet", checkOne, props.infuraCode).then((res) => {
+                        console.log(res);
+                        setResult1(res);
+                        setLoading(false);
+                });
+                }else if(dataType == 2){
+                    ret = await bscFunc(1,account,"testnet", checkOne, props.infuraCode).then((res) => {
+                        console.log(res);
+                    setResult2(res);
+                    setLoading(false);
+                });
+                }
+            }
         }
 
     }
@@ -171,6 +230,8 @@ export default function Scope(props) {
                         >
                         <MenuItem value={"Eth"}>Ethereum</MenuItem>
                         <MenuItem value={"Klay"}>Klaytn</MenuItem>
+                        <MenuItem value={"Poly"}>Polygon</MenuItem>
+                        <MenuItem value={"Bsc"}>BSC</MenuItem>
                         </Select>
                     </FormControl>
                 </Box>
@@ -218,11 +279,7 @@ export default function Scope(props) {
                         </Select>
                     </FormControl>
                 </Box>
-                {network == "Meta" ?
-                    <TextField style={{width : '35%'}} value={"0x791a7dc0ef8ab1f995f595e39fd196c6c8aa5fc9"} disabled={true} onChange={(e) => handleChange(e)} id="outlined-basic" label="Outlined" variant="outlined" />
-                :
-                    <TextField style={{width : '35%'}} value={account} onChange={(e) => handleChange(e)} id="outlined-basic" label="Outlined" variant="outlined" />
-                }
+                <TextField style={{width : '35%'}} value={account} onChange={(e) => handleChange(e)} id="outlined-basic" label="Outlined" variant="outlined" />
                 <Button onClick={getData} variant="contained">Get Data</Button>
                 <Button>
                     {dataType == 1 ?
@@ -241,11 +298,6 @@ export default function Scope(props) {
                         />
                     }
                 </Button>
-                {/* {chain == "Eth" ?
-                    <span><Checkbox checked={checkOne} onChange={(e) => checkChange(e)} />하나씩 탐색</span>
-                    :
-                    <div/>
-                } */}
             </div>
             <div style={{ height: 500, width: '97%' , margin: '10px'}}>
                 {loading ? 

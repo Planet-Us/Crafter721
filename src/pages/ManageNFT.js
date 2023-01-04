@@ -185,7 +185,7 @@ const getOwnTokenList = async (contractAddress) =>{
     let tokenList = new Array();
     let web3Obj;
     let caver;
-    if(props.chain == "ETH" || props.chain == "POLY"){
+    if(props.chain == "ETH" || props.chain == "POLY" || props.chain == "BSC"){
       web3Obj = web3.eth;
       let ret = await web3Obj.accounts.wallet.add(props.privateKey);
       contract = new web3Obj.Contract(contractData.ethNFTABI,contractAddress);
