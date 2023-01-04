@@ -183,7 +183,7 @@ useEffect(() => {
         if(chain == "ETH" || chain == "POLY"){
           web3Obj = web3.eth;
           setInfuraCode(walletTmp.infuraCode);
-          await electronStore.set('infuraCode', infuraCode);
+          electronStore.set('infuraCode', walletTmp.infuraCode);
         }else if(chain == "KLAY"){
           web3Obj = web3.klay;
         }
@@ -767,7 +767,7 @@ const mintNFT = async (mintNum, contractAddress, price) =>{ //메시지에 수�
 const createWallet = async (password, infuraCodeArg) =>{
   setLoading(true);
   setInfuraCode(infuraCodeArg);
-  await electronStore.set('infuraCode', infuraCodeArg);
+  electronStore.set('infuraCode', infuraCodeArg);
   Init(chain);
 
   let ret;
